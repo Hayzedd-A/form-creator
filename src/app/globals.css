@@ -70,20 +70,350 @@
 * {
   border-color: hsl(var(--border));
 }
+
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
 }
+
 button {
   cursor: pointer;
 }
+
 button:hover {
   background-color: hsl(var(--background));
 }
 
-/* * {
-  @apply border-border;
+/* Dialog animations and styles */
+@keyframes dialog-overlay-show {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
-body {
-  bg-background text-foreground;
-} */
+
+@keyframes dialog-overlay-hide {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-content-show {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes dialog-content-hide {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+}
+
+/* Dialog overlay */
+[data-radix-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+[data-radix-dialog-overlay][data-state="open"] {
+  animation: dialog-overlay-show 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-radix-dialog-overlay][data-state="closed"] {
+  animation: dialog-overlay-hide 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dialog content */
+[data-radix-dialog-content] {
+  background-color: hsl(var(--background));
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 50;
+  display: grid;
+  width: 100%;
+  max-width: 32rem;
+  padding: 1.5rem;
+  gap: 1rem;
+  transform: translate(-50%, -50%);
+}
+
+[data-radix-dialog-content][data-state="open"] {
+  animation: dialog-content-show 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-radix-dialog-content][data-state="closed"] {
+  animation: dialog-content-hide 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Separator styles */
+[data-radix-separator-root] {
+  flex-shrink: 0;
+  background-color: hsl(var(--border));
+}
+
+[data-radix-separator-root][data-orientation="horizontal"] {
+  height: 1px;
+  width: 100%;
+}
+
+[data-radix-separator-root][data-orientation="vertical"] {
+  height: 100%;
+  width: 1px;
+}
+
+/* Additional utility classes for the modal */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-content-large {
+  max-width: 56rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Scrollbar styling for modal content */
+.modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground));
+}
+
+/* Badge variants */
+.badge-default {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.badge-secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+.badge-destructive {
+  background-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+}
+
+.badge-outline {
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+
+/* Card styles */
+.card {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+}
+
+/* Button variants */
+.button-ghost {
+  background-color: transparent;
+  color: hsl(var(--foreground));
+}
+
+.button-ghost:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.button-outline {
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.button-outline:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.button-destructive {
+  background-color: hsl(var(--destructive));
+  color: hsl(var(--destructive-foreground));
+}
+
+.button-destructive:hover {
+  background-color: hsl(var(--destructive) / 0.9);
+}
+
+/* Input and textarea styles */
+.input {
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.input:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.textarea {
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border-radius: calc(var(--radius) - 2px);
+  resize: none;
+}
+
+.textarea:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Tab styles */
+.tabs-list {
+  background-color: hsl(var(--muted));
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.tabs-trigger {
+  background-color: transparent;
+  color: hsl(var(--muted-foreground));
+}
+
+.tabs-trigger[data-state="active"] {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Label styles */
+.label {
+  color: hsl(var(--foreground));
+  font-weight: 500;
+}
+
+/* Select styles */
+.select-trigger {
+  border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.select-trigger:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.select-content {
+  background-color: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+
+/* Add these additional utility classes at the end of your existing CSS */
+
+/* Utility classes for better component styling */
+.text-red-600 { color: rgb(220 38 38); }
+.text-green-600 { color: rgb(22 163 74); }
+.text-blue-600 { color: rgb(37 99 235); }
+.text-yellow-600 { color: rgb(202 138 4); }
+.text-orange-600 { color: rgb(234 88 12); }
+
+.text-red-500 { color: rgb(239 68 68); }
+.text-green-500 { color: rgb(34 197 94); }
+.text-blue-500 { color: rgb(59 130 246); }
+.text-yellow-400 { color: rgb(250 204 21); }
+.text-gray-300 { color: rgb(209 213 219); }
+.text-gray-400 { color: rgb(156 163 175); }
+.text-gray-500 { color: rgb(107 114 128); }
+.text-gray-600 { color: rgb(75 85 99); }
+
+.bg-red-500 { background-color: rgb(239 68 68); }
+.bg-green-500 { background-color: rgb(34 197 94); }
+.bg-blue-500 { background-color: rgb(59 130 246); }
+.bg-yellow-500 { background-color: rgb(234 179 8); }
+.bg-orange-500 { background-color: rgb(249 115 22); }
+
+.bg-gray-50 { background-color: rgb(249 250 251); }
+.bg-gray-100 { background-color: rgb(243 244 246); }
+.bg-gray-200 { background-color: rgb(229 231 235); }
+
+.bg-blue-50 { background-color: rgb(239 246 255); }
+.border-blue-200 { border-color: rgb(191 219 254); }
+.text-blue-800 { color: rgb(30 64 175); }
+.text-blue-900 { color: rgb(30 58 138); }
+
+.rounded-full { border-radius: 9999px; }
+.rounded-lg { border-radius: 0.5rem; }
+
+.transition-all { transition: all 0.15s ease-in-out; }
+.duration-300 { transition-duration: 300ms; }
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.max-w-32 { max-width: 8rem; }
+
+.break-words { word-wrap: break-word; }
+
+.overflow-x-auto { overflow-x: auto; }
+
+.fill-current { fill: currentColor; }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
