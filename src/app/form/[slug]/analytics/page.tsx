@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Download, Calendar, Users, Clock, TrendingUp, BarChart3, PieChart } from 'lucide-react'
-import { formatDate, formatDuration, calculatePercentage } from '@/lib/utils'
+import { formatDate, calculatePercentage } from '@/lib/utils'
 import {
   LineChart,
   Line,
@@ -21,6 +21,7 @@ import {
   PieChart as RechartsPieChart,
   Cell
 } from 'recharts'
+import { formatDuration } from '@/lib/analytics'
 
 interface AnalyticsData {
   overview: {

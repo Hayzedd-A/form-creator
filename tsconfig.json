@@ -15,7 +15,6 @@
     "checkJs": false,
     "skipLibCheck": true,
     "strict": false,
-
     "plugins": [
       {
         "name": "next"
