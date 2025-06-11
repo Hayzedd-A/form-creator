@@ -322,7 +322,7 @@ export default function FormAnalytics() {
                           fill={COLORS[index % COLORS.length]}
                         />
                       ))}
-                    </Pie>
+                    </PieChart>
                     <Tooltip />
                   </RechartsPieChart>
                 </ResponsiveContainer>
