@@ -305,7 +305,7 @@ export default function FormAnalytics() {
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsPieChart>
-                    <Pie
+                    <PieChart
                       data={analytics.demographics.devices}
                       cx="50%"
                       cy="50%"
