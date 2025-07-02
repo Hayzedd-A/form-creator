@@ -386,9 +386,10 @@ export async function POST(
 // Handle draft saving
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const params = await context.params;
     await dbConnect();
 
     const form = await Form.findOne({ slug: params.slug }).lean();
