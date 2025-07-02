@@ -7,8 +7,9 @@ import FormResponse from '@/models/FormResponse'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
+  const params = await context.params
   try {
     const session = await getServerSession(authOptions)
     

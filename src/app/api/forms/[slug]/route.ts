@@ -6,9 +6,10 @@ import FormResponse from "@/models/FormResponse";
 // GET - Fetch form by slug
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const params = await context.params
     // const session = await getServerSession(authOptions);
 
     // if (!session?.user?.id) {
@@ -39,9 +40,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const params = await context.params
     const { email } = await request.json();
 
     if (!email) {
@@ -87,9 +89,10 @@ import { MongooseError } from "mongoose";
 // PUT - Update form by slug
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
@@ -338,9 +341,10 @@ export async function PUT(
 // DELETE - Delete form by slug
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const params = await context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
