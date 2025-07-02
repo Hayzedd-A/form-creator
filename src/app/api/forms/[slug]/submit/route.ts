@@ -132,9 +132,10 @@ import dbConnect from "@/lib/mongodb";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const params = await context.params;
     await dbConnect();
 
     const form = await Form.findOne({ slug: params.slug }).lean();
