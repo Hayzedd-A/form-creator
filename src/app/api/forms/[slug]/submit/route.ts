@@ -228,7 +228,7 @@ export async function POST(
               .map((f) => f.name || f.toString())
               .join(", ");
           } else {
-            processedValue = value.name || value.toString();
+            processedValue = value?.name || value.toString();
           }
         }
 
@@ -370,7 +370,7 @@ export async function POST(
         {
           error: "Validation failed",
           details: validationErrors,
-          receivedData: body,
+          receivedData: await request.json(),
         },
         { status: 400 }
       );

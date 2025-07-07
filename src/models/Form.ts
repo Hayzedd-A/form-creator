@@ -1,6 +1,6 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Model } from "mongoose";
 
-export interface IFormField {
+export interface IFormField extends Document {
   id: string;
   type:
     | "short-text"
@@ -193,5 +193,12 @@ FormSchema.index({ userId: 1, createdAt: -1 });
 // FormSchema.index({ slug: 1 });
 FormSchema.index({ isActive: 1 });
 
-export default mongoose.models.Form ||
+const Form: Model<IForm> = mongoose.models.Form ||
   mongoose.model<IForm>("Form", FormSchema);
+
+
+// Explicitly type the model
+// const User: Model<IUser> =
+//   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+
+export default Form;

@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Model } from "mongoose";
 
 export interface IFormResponseField {
   fieldId: string;
@@ -117,5 +117,9 @@ FormResponseSchema.index({ formId: 1, submitterEmail: 1 });
 FormResponseSchema.index({ formId: 1, submitterIp: 1 });
 FormResponseSchema.index({ formId: 1, totalScore: -1 });
 
-export default mongoose.models.FormResponse ||
-  mongoose.model<IFormResponse>("FormResponse", FormResponseSchema);
+const FormResponse: Model<IFormResponse> =  mongoose.models.FormResponse || mongoose.model<IFormResponse>("FormResponse", FormResponseSchema);
+// // Explicitly type the model
+// const User: Model<IUser> =
+//   mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+
+export default FormResponse;
