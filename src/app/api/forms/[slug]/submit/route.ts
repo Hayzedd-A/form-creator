@@ -225,10 +225,21 @@ export async function POST(
         if (field.type === "file-upload" && value) {
           if (Array.isArray(value)) {
             processedValue = value
-              .map((f) => f.name || f.toString())
+              .map((f) => {
+                // Type guard for file objects
+                if (f && typeof f === "object" && "name" in f) {
+                  return (f as { name: string }).name;
+                }
+                return String(f);
+              })
               .join(", ");
           } else {
-            processedValue = value?.name || value.toString();
+            // Type guard for single file object
+            if (value && typeof value === "object" && "name" in value) {
+              processedValue = (value as { name: string }).name;
+            } else {
+              processedValue = String(value);
+            }
           }
         }
 

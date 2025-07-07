@@ -37,6 +37,7 @@ export interface IFormSettings {
   allowedEmails: string[];
   limitOneResponse: boolean;
   limitByEmail: boolean;
+  limitByIP: boolean;
   openDate?: Date;
   closeDate?: Date;
   assignmentMode: boolean;
@@ -53,10 +54,17 @@ export interface IFormSettings {
   showCorrectAnswers: boolean;
   allowRetakes: boolean;
   maxRetakes?: number;
+  redirectUrl?: string;
+  customSuccessMessage?: string;
+  notifications?: {
+    emailOnSubmission: boolean;
+    notificationEmails: boolean;
+  };
   customTheme?: {
     primaryColor?: string;
     backgroundColor?: string;
     fontFamily?: string;
+    textColor?: string;
   };
 }
 
