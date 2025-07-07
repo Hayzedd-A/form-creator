@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, Model } from "mongoose";
+import mongoose, { Document, Schema, Model, ObjectId } from "mongoose";
 
 export interface IFormField extends Document {
   id: string;
@@ -61,6 +61,7 @@ export interface IFormSettings {
 }
 
 export interface IForm extends Document {
+  _id: mongoose.Types.ObjectId,
   title: string;
   description?: string;
   slug: string;

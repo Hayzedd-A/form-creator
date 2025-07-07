@@ -106,10 +106,10 @@ export async function GET(
       .lean();
 
     // Calculate analytics
-    const analytics = await calculateAnalytics(form._id, form);
+    const analytics = await calculateAnalytics(form._id.toString(), form);
 
     // Calculate field analytics
-    const fieldAnalytics = await calculateFieldAnalytics(form._id, form.fields);
+    const fieldAnalytics = await calculateFieldAnalytics(form._id.toString(), form.fields);
 
     return NextResponse.json({
       responses,
