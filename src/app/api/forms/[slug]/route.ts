@@ -315,7 +315,7 @@ export async function PUT(
           {
             error: "Validation error",
             details: error.message,
-            validationErrors: error.errors,
+            validationErrors: error.stack,
           },
           { status: 400 }
         );
