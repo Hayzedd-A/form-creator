@@ -49,6 +49,7 @@ import {
 import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import ResponseDetailModal from "@/components/ResponseDetailModal";
+// import ResponseDetailModal from "@/components/ResponseDetailModal";
 
 interface FormResponse {
   _id: string;
@@ -143,7 +144,7 @@ export default function FormResponses() {
   
   const [form, setForm] = useState<Form | null>(null);
   const [responses, setResponses] = useState<FormResponse[]>([]);
-  const [response, setResponse] = useState<FormResponse>({})
+  // const [response, setResponse] = useState<FormResponse>({})
   const [filteredResponses, setFilteredResponses] = useState<FormResponse[]>(
     []
   );
@@ -1241,7 +1242,6 @@ export default function FormResponses() {
                                 </td>
                               ))}
                               <td className="p-3">
-                                
                                 <div className="flex items-center gap-2">
                                   <ResponseDetailModal
                                     response={response}
@@ -1343,11 +1343,22 @@ export default function FormResponses() {
             {/* Field Analytics */}
             <Card>
               <CardHeader>
-                <CardTitle>Field Analytics</CardTitle>
-                <CardDescription>
-                  Response statistics for each form field
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Field Analytics</CardTitle>
+                    <CardDescription>
+                      Response statistics for each form field
+                    </CardDescription>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/form/${slug}/analytics`}>
+                      <BarChart3 className="w-4 h-4 mr-2" />
+                      View Demographics
+                    </Link>
+                  </Button>
+                </div>
               </CardHeader>
+
               <CardContent>
                 <div className="space-y-6">
                   {analytics?.fieldAnalytics.map((fieldAnalytic) => (

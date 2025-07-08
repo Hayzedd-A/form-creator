@@ -19,7 +19,8 @@ import {
   BarChart,
   Bar,
   PieChart as RechartsPieChart,
-  Cell
+  Cell,
+  Pie
 } from 'recharts'
 import { formatDuration } from '@/lib/analytics'
 
@@ -305,7 +306,7 @@ export default function FormAnalytics() {
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsPieChart>
-                    <PieChart
+                    <Pie
                       data={analytics.demographics.devices}
                       cx="50%"
                       cy="50%"
@@ -322,7 +323,7 @@ export default function FormAnalytics() {
                           fill={COLORS[index % COLORS.length]}
                         />
                       ))}
-                    </PieChart>
+                    </Pie>
                     <Tooltip />
                   </RechartsPieChart>
                 </ResponsiveContainer>
