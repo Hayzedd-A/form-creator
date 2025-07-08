@@ -105,8 +105,10 @@ export function getClientIP(request: NextRequest): string {
   if (realIP) return realIP;
   if (forwarded) return forwarded.split(",")[0].trim();
 
-  return request.ip || "127.0.0.1";
+  // Fallback to connection info or default
+  return request.nextUrl.hostname || "127.0.0.1";
 }
+
 
 export function calculateResponseTime(startTime: Date, endTime: Date): number {
   return Math.floor((endTime.getTime() - startTime.getTime()) / 1000);
