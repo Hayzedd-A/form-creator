@@ -40,6 +40,11 @@ export default function SignIn() {
     }
   }
 
+  const handleForgotPasswordClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
@@ -69,14 +74,6 @@ export default function SignIn() {
                 <label htmlFor="password" className="text-sm font-medium">
                   Password
                 </label>
-                <ForgetPasswordModal>
-                  <button
-                    type="button"
-                    className="text-sm text-primary hover:underline focus:outline-none"
-                  >
-                    Forgot password?
-                  </button>
-                </ForgetPasswordModal>
               </div>
               <Input
                 id="password"
@@ -88,11 +85,20 @@ export default function SignIn() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
+          <ForgetPasswordModal>
+            <button
+              type="button"
+              // onClick={handleForgotPasswordClick}
+              className="text-sm w-full text-end text-primary hover:bg-gray-300 hover:underline focus:outline-none"
+            >
+              Forgot password?
+            </button>
+          </ForgetPasswordModal>
           <div className="mt-4 text-center text-sm">
-            Don't have an account?{' '}
+            Don't have an account?{" "}
             <Link href="/auth/signup" className="text-primary hover:underline">
               Sign up
             </Link>
@@ -100,5 +106,5 @@ export default function SignIn() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

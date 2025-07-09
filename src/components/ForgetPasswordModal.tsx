@@ -19,7 +19,9 @@ interface ForgetPasswordModalProps {
   children: React.ReactNode;
 }
 
-export default function ForgetPasswordModal({ children }: ForgetPasswordModalProps) {
+export default function ForgetPasswordModal({
+  children,
+}: ForgetPasswordModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +29,7 @@ export default function ForgetPasswordModal({ children }: ForgetPasswordModalPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
       toast.error("Email is required");
       return;
@@ -79,10 +81,16 @@ export default function ForgetPasswordModal({ children }: ForgetPasswordModalPro
     setEmail("");
   };
 
+  const handleTriggerClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsOpen(true);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild onClick={() => setIsOpen(true)}>
-        {children}
+      <DialogTrigger asChild>
+        <div onClick={handleTriggerClick}>{children}</div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -121,7 +129,10 @@ export default function ForgetPasswordModal({ children }: ForgetPasswordModalPro
             </div>
 
             <div className="text-sm text-gray-600 space-y-2">
-              <p>Please check your email and click the link to reset your password.</p>
+              <p>
+                Please check your email and click the link to reset your
+                password.
+              </p>
               <p>If you don't see the email, check your spam folder.</p>
             </div>
 
@@ -164,7 +175,14 @@ export default function ForgetPasswordModal({ children }: ForgetPasswordModalPro
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="flex-1"
+                disabled={isLoading}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
                 {isLoading ? "Sending..." : "Send Reset Link"}
               </Button>
             </div>
