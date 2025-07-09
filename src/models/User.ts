@@ -6,6 +6,8 @@ export interface IUser extends Document {
   name: string;
   image: string;
   cloudinaryPublicId: string;
+  resetToken: string;
+  resetTokenExpiry: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +37,14 @@ const UserSchema = new Schema<IUser>(
     },
     cloudinaryPublicId: {
       type: String,
+      default: null,
+    },
+    resetToken: {
+      type: String,
+      default: null,
+    },
+    resetTokenExpiry: {
+      type: Date,
       default: null,
     },
   },

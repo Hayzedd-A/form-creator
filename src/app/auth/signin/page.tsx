@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
+import ForgetPasswordModal from '@/components/ForgetPasswordModal'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
@@ -64,9 +65,19 @@ export default function SignIn() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </label>
+                <ForgetPasswordModal>
+                  <button
+                    type="button"
+                    className="text-sm text-primary hover:underline focus:outline-none"
+                  >
+                    Forgot password?
+                  </button>
+                </ForgetPasswordModal>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -81,7 +92,7 @@ export default function SignIn() {
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{' '}
+            Don't have an account?{' '}
             <Link href="/auth/signup" className="text-primary hover:underline">
               Sign up
             </Link>
