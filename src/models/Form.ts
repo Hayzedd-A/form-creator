@@ -16,6 +16,10 @@ export interface IFormField extends Document {
     | "number"
     | "date"
     | "datetime"
+    | "phone"
+    | "url"
+    | "signature"
+    | "time"
     | "address";
   label: string;
   required: boolean;
@@ -102,6 +106,10 @@ const FormFieldSchema = new Schema<IFormField>({
       "date",
       "datetime",
       "address",
+      "phone",
+      "signature",
+      "url",
+      "time"
     ],
   },
   label: { type: String, required: true },
