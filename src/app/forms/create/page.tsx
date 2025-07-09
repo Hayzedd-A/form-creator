@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -36,8 +37,11 @@ import {
   Calendar,
   Palette,
   Bell,
+  Upload,
 } from "lucide-react";
 import Link from "next/link";
+import { PREDEFINED_OPTIONS, PREDEFINED_CATEGORIES } from "@/lib/datas";
+import ImportOptionsDialog from "@/components/ImportOptionDialog";
 
 interface FormField {
   id: string;
@@ -322,447 +326,570 @@ export default function CreateForm() {
     }
   };
 
-  const renderFieldEditor = (field: FormField) => {
-    return (
-      <div key={field.id} className="border rounded-lg p-4 bg-white">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <GripVertical className="w-4 h-4 text-gray-400" />
-            <span className="font-medium">
-              {FIELD_TYPES.find((t) => t.value === field.type)?.icon}{" "}
-              {field.type
-                .replace("-", " ")
-                .replace(/\b\w/g, (l) => l.toUpperCase())}
-            </span>
-          </div>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => removeField(field.id)}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
+ const renderFieldEditor = (field: FormField) => {
+   const addOption = () => {
+     const newOptions = [
+       ...(field.options || []),
+       `Option ${(field.options?.length || 0) + 1}`,
+     ];
+     updateField(field.id, { options: newOptions });
+   };
 
-        <div className="space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <Label>Field Label *</Label>
-              <Input
-                value={field.label}
-                onChange={(e) =>
-                  updateField(field.id, { label: e.target.value })
-                }
-                placeholder="Enter field label"
-              />
-            </div>
-            <div>
-              <Label>Width</Label>
-              <Select
-                value={field.width}
-                onValueChange={(value: "full" | "half") =>
-                  updateField(field.id, { width: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="full">Full Width</SelectItem>
-                  <SelectItem value="half">Half Width</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+   const updateOption = (index: number, value: string) => {
+     const newOptions = [...(field.options || [])];
+     newOptions[index] = value;
+     updateField(field.id, { options: newOptions });
+   };
 
-          <div>
-            <Label>Description (Help Text)</Label>
-            <Input
-              value={field.description || ""}
-              onChange={(e) =>
-                updateField(field.id, { description: e.target.value })
-              }
-              placeholder="Optional help text for this field"
-            />
-          </div>
+   const removeOption = (index: number) => {
+     const newOptions = field.options?.filter((_, i) => i !== index);
+     updateField(field.id, { options: newOptions });
+   };
 
-          {/* Text field settings */}
-          {(field.type === "short-text" ||
-            field.type === "paragraph" ||
-            field.type === "email" ||
-            field.type === "url" ||
-            field.type === "phone") && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <Label>Placeholder</Label>
-                <Input
-                  value={field.placeholder || ""}
-                  onChange={(e) =>
-                    updateField(field.id, { placeholder: e.target.value })
-                  }
-                  placeholder="Placeholder text"
-                />
-              </div>
-              <div>
-                <Label>Max Length</Label>
-                <Input
-                  type="number"
-                  value={field.maxLength || ""}
-                  onChange={(e) =>
-                    updateField(field.id, {
-                      maxLength: parseInt(e.target.value) || undefined,
-                    })
-                  }
-                  placeholder="Maximum characters"
-                />
-              </div>
-            </div>
-          )}
+   const loadPredefinedOptions = (optionKey: string) => {
+     if (
+       optionKey &&
+       PREDEFINED_OPTIONS[optionKey as keyof typeof PREDEFINED_OPTIONS]
+     ) {
+       const predefinedOptions =
+         PREDEFINED_OPTIONS[optionKey as keyof typeof PREDEFINED_OPTIONS];
+       updateField(field.id, { options: predefinedOptions });
+     }
+   };
 
-          {/* Number field settings */}
-          {field.type === "number" && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <Label>Min Value</Label>
-                <Input
-                  type="number"
-                  value={field.minValue || ""}
-                  onChange={(e) =>
-                    updateField(field.id, {
-                      minValue: parseInt(e.target.value) || undefined,
-                    })
-                  }
-                  placeholder="Minimum value"
-                />
-              </div>
-              <div>
-                <Label>Max Value</Label>
-                <Input
-                  type="number"
-                  value={field.maxValue || ""}
-                  onChange={(e) =>
-                    updateField(field.id, {
-                      maxValue: parseInt(e.target.value) || undefined,
-                    })
-                  }
-                  placeholder="Maximum value"
-                />
-              </div>
-              <div>
-                <Label>Step</Label>
-                <Input
-                  type="number"
-                  value={field.step || 1}
-                  onChange={(e) =>
-                    updateField(field.id, {
-                      step: parseInt(e.target.value) || 1,
-                    })
-                  }
-                  placeholder="Step increment"
-                />
-              </div>
-            </div>
-          )}
+   const clearAllOptions = () => {
+     updateField(field.id, { options: [] });
+   };
 
-          {/* Date field settings */}
-          {(field.type === "date" || field.type === "datetime") && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div>
-                <Label>Date Format</Label>
-                <Select
-                  value={field.dateFormat}
-                  onValueChange={(value: any) =>
-                    updateField(field.id, { dateFormat: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                    <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                    <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Min Date</Label>
-                <Input
-                  type="date"
-                  value={field.minDate || ""}
-                  onChange={(e) =>
-                    updateField(field.id, { minDate: e.target.value })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Max Date</Label>
-                <Input
-                  type="date"
-                  value={field.maxDate || ""}
-                  onChange={(e) =>
-                    updateField(field.id, { maxDate: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-          )}
+   return (
+     <div key={field.id} className="border rounded-lg p-4 bg-white">
+       <div className="flex items-center justify-between mb-3">
+         <div className="flex items-center gap-2">
+           <GripVertical className="w-4 h-4 text-gray-400" />
+           <span className="font-medium">
+             {FIELD_TYPES.find((t) => t.value === field.type)?.icon}{" "}
+             {field.type
+               .replace("-", " ")
+               .replace(/\b\w/g, (l) => l.toUpperCase())}
+           </span>
+         </div>
+         <Button
+           type="button"
+           variant="ghost"
+           size="sm"
+           onClick={() => removeField(field.id)}
+         >
+           <Trash2 className="w-4 h-4" />
+         </Button>
+       </div>
 
-          {/* Choice-based field options */}
-          {(field.type === "multiple-choice" ||
-            field.type === "checkbox" ||
-            field.type === "dropdown") && (
-            <div>
-              <Label>Options</Label>
-              {field.options?.map((option, optionIndex) => (
-                <div key={optionIndex} className="flex gap-2 mb-2">
-                  <Input
-                    value={option}
-                    onChange={(e) => {
-                      const newOptions = [...(field.options || [])];
-                      newOptions[optionIndex] = e.target.value;
-                      updateField(field.id, { options: newOptions });
-                    }}
-                    placeholder={`Option ${optionIndex + 1}`}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const newOptions = field.options?.filter(
-                        (_, i) => i !== optionIndex
-                      );
-                      updateField(field.id, { options: newOptions });
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const newOptions = [
-                      ...(field.options || []),
-                      `Option ${(field.options?.length || 0) + 1}`,
-                    ];
-                    updateField(field.id, { options: newOptions });
-                  }}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Option
-                </Button>
-                {field.type === "multiple-choice" && (
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={field.allowOther || false}
-                      onCheckedChange={(checked) =>
-                        updateField(field.id, { allowOther: checked })
-                      }
-                    />
-                    <Label>Allow "Other" option</Label>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+       <div className="space-y-3">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+           <div>
+             <Label>Field Label *</Label>
+             <Input
+               value={field.label}
+               onChange={(e) =>
+                 updateField(field.id, { label: e.target.value })
+               }
+               placeholder="Enter field label"
+             />
+           </div>
+           <div>
+             <Label>Width</Label>
+             <Select
+               value={field.width}
+               onValueChange={(value: "full" | "half") =>
+                 updateField(field.id, { width: value })
+               }
+             >
+               <SelectTrigger>
+                 <SelectValue />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="full">Full Width</SelectItem>
+                 <SelectItem value="half">Half Width</SelectItem>
+               </SelectContent>
+             </Select>
+           </div>
+         </div>
 
-          {/* Rating field settings */}
-          {field.type === "rating" && (
-            <div>
-              <Label>Maximum Rating</Label>
-              <Select
-                value={field.maxRating?.toString()}
-                onValueChange={(value) =>
-                  updateField(field.id, { maxRating: parseInt(value) })
-                }
-              >
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3">3 Stars</SelectItem>
-                  <SelectItem value="5">5 Stars</SelectItem>
-                  <SelectItem value="10">10 Stars</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+         <div>
+           <Label>Description (Help Text)</Label>
+           <Input
+             value={field.description || ""}
+             onChange={(e) =>
+               updateField(field.id, { description: e.target.value })
+             }
+             placeholder="Optional help text for this field"
+           />
+         </div>
 
-          {/* Linear scale settings */}
-          {field.type === "linear-scale" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label>Min Scale</Label>
-                  <Input
-                    type="number"
-                    value={field.minScale || 1}
-                    onChange={(e) =>
-                      updateField(field.id, {
-                        minScale: parseInt(e.target.value) || 1,
-                      })
-                    }
-                  />
-                </div>
-                <div>
-                  <Label>Max Scale</Label>
-                  <Input
-                    type="number"
-                    value={field.maxScale || 10}
-                    onChange={(e) =>
-                      updateField(field.id, {
-                        maxScale: parseInt(e.target.value) || 10,
-                      })
-                    }
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label>Min Label</Label>
-                  <Input
-                    value={field.scaleLabels?.min || ""}
-                    onChange={(e) =>
-                      updateField(field.id, {
-                        scaleLabels: {
-                          ...field.scaleLabels,
-                          min: e.target.value,
-                        },
-                      })
-                    }
-                    placeholder="e.g., Poor"
-                  />
-                </div>
-                <div>
-                  <Label>Max Label</Label>
-                  <Input
-                    value={field.scaleLabels?.max || ""}
-                    onChange={(e) =>
-                      updateField(field.id, {
-                        scaleLabels: {
-                          ...field.scaleLabels,
-                          max: e.target.value,
-                        },
-                      })
-                    }
-                    placeholder="e.g., Excellent"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+         {/* Text field settings */}
+         {(field.type === "short-text" ||
+           field.type === "paragraph" ||
+           field.type === "email" ||
+           field.type === "url" ||
+           field.type === "phone") && (
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+             <div>
+               <Label>Placeholder</Label>
+               <Input
+                 value={field.placeholder || ""}
+                 onChange={(e) =>
+                   updateField(field.id, { placeholder: e.target.value })
+                 }
+                 placeholder="Placeholder text"
+               />
+             </div>
+             <div>
+               <Label>Max Length</Label>
+               <Input
+                 type="number"
+                 value={field.maxLength || ""}
+                 onChange={(e) =>
+                   updateField(field.id, {
+                     maxLength: parseInt(e.target.value) || undefined,
+                   })
+                 }
+                 placeholder="Maximum characters"
+               />
+             </div>
+           </div>
+         )}
 
-          {/* File upload settings */}
-          {field.type === "file-upload" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <Label>Max File Size (MB)</Label>
-                <Input
-                  type="number"
-                  value={field.maxFileSize || 10}
-                  onChange={(e) =>
-                    updateField(field.id, {
-                      maxFileSize: parseInt(e.target.value) || 10,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <Label>Max Files</Label>
-                <Input
-                  type="number"
-                  value={field.maxFiles || 1}
-                  onChange={(e) =>
-                    updateField(field.id, {
-                      maxFiles: parseInt(e.target.value) || 1,
-                    })
-                  }
-                />
-              </div>
-            </div>
-          )}
+         {/* Number field settings */}
+         {field.type === "number" && (
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+             <div>
+               <Label>Min Value</Label>
+               <Input
+                 type="number"
+                 value={field.minValue || ""}
+                 onChange={(e) =>
+                   updateField(field.id, {
+                     minValue: parseInt(e.target.value) || undefined,
+                   })
+                 }
+                 placeholder="Minimum value"
+               />
+             </div>
+             <div>
+               <Label>Max Value</Label>
+               <Input
+                 type="number"
+                 value={field.maxValue || ""}
+                 onChange={(e) =>
+                   updateField(field.id, {
+                     maxValue: parseInt(e.target.value) || undefined,
+                   })
+                 }
+                 placeholder="Maximum value"
+               />
+             </div>
+             <div>
+               <Label>Step</Label>
+               <Input
+                 type="number"
+                 value={field.step || 1}
+                 onChange={(e) =>
+                   updateField(field.id, {
+                     step: parseInt(e.target.value) || 1,
+                   })
+                 }
+                 placeholder="Step increment"
+               />
+             </div>
+           </div>
+         )}
 
-          {/* Assignment mode - correct answer */}
-          {settings.assignmentMode && (
-            <div className="border-t pt-3 mt-3">
-              <Label>Correct Answer (Assignment Mode)</Label>
-              {field.type === "multiple-choice" || field.type === "dropdown" ? (
-                <Select
-                  value={field.correctAnswer}
-                  onValueChange={(value) =>
-                    updateField(field.id, { correctAnswer: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select correct answer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {field.options?.map((option, index) => (
-                      <SelectItem key={index} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : field.type === "yes-no" ? (
-                <Select
-                  value={field.correctAnswer}
-                  onValueChange={(value) =>
-                    updateField(field.id, { correctAnswer: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select correct answer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input
-                  value={field.correctAnswer || ""}
-                  onChange={(e) =>
-                    updateField(field.id, { correctAnswer: e.target.value })
-                  }
-                  placeholder="Enter correct answer"
-                />
-              )}
-              <div className="mt-2">
-                <Label>Explanation</Label>
-                <Textarea
-                  value={field.explanation || ""}
-                  onChange={(e) =>
-                    updateField(field.id, { explanation: e.target.value })
-                  }
-                  placeholder="Explain why this is the correct answer"
-                  className="h-20"
-                />
-              </div>
-            </div>
-          )}
+         {/* Date field settings */}
+         {(field.type === "date" || field.type === "datetime") && (
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+             <div>
+               <Label>Date Format</Label>
+               <Select
+                 value={field.dateFormat}
+                 onValueChange={(value: any) =>
+                   updateField(field.id, { dateFormat: value })
+                 }
+               >
+                 <SelectTrigger>
+                   <SelectValue />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
+                   <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
+                   <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
+                 </SelectContent>
+               </Select>
+             </div>
+             <div>
+               <Label>Min Date</Label>
+               <Input
+                 type="date"
+                 value={field.minDate || ""}
+                 onChange={(e) =>
+                   updateField(field.id, { minDate: e.target.value })
+                 }
+               />
+             </div>
+             <div>
+               <Label>Max Date</Label>
+               <Input
+                 type="date"
+                 value={field.maxDate || ""}
+                 onChange={(e) =>
+                   updateField(field.id, { maxDate: e.target.value })
+                 }
+               />
+             </div>
+           </div>
+         )}
 
-          <div className="flex items-center gap-4 pt-2 border-t">
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={field.required}
-                onCheckedChange={(checked) =>
-                  updateField(field.id, { required: checked })
-                }
-              />
-              <Label>Required field</Label>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+         {/* Choice-based field options - UPDATED SECTION */}
+         {(field.type === "multiple-choice" ||
+           field.type === "checkbox" ||
+           field.type === "dropdown") && (
+           <div>
+             <div className="flex items-center justify-between mb-2">
+               <Label>Options</Label>
+               <div className="flex gap-2">
+                 <Select onValueChange={loadPredefinedOptions}>
+                   <SelectTrigger className="w-48">
+                     <SelectValue placeholder="Load predefined options" />
+                   </SelectTrigger>
+                   <SelectContent>
+                     {PREDEFINED_CATEGORIES.map((category) => (
+                       <div key={category.label}>
+                         <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                           {category.label}
+                         </div>
+                         {category.options.map((option) => (
+                           <SelectItem key={option} value={option}>
+                             {option
+                               .replace(/([A-Z])/g, " $1")
+                               .replace(/^./, (str) => str.toUpperCase())}
+                           </SelectItem>
+                         ))}
+                       </div>
+                     ))}
+                   </SelectContent>
+                 </Select>
+
+                 <ImportOptionsDialog
+                   onImport={(importedOptions) =>
+                     updateField(field.id, { options: importedOptions })
+                   }
+                   trigger={
+                     <Button type="button" variant="outline" size="sm">
+                       <Upload className="w-4 h-4 mr-2" />
+                       Import
+                     </Button>
+                   }
+                 />
+               </div>
+             </div>
+
+             <div className="space-y-2">
+               {field.options?.map((option, optionIndex) => (
+                 <div key={optionIndex} className="flex gap-2">
+                   <Input
+                     value={option}
+                     onChange={(e) => updateOption(optionIndex, e.target.value)}
+                     placeholder={`Option ${optionIndex + 1}`}
+                   />
+                   <Button
+                     type="button"
+                     variant="ghost"
+                     size="sm"
+                     onClick={() => removeOption(optionIndex)}
+                     disabled={(field.options?.length || 0) <= 1}
+                   >
+                     <Trash2 className="w-4 h-4" />
+                   </Button>
+                 </div>
+               ))}
+             </div>
+
+             <div className="flex gap-2 mt-2">
+               <Button
+                 type="button"
+                 variant="outline"
+                 size="sm"
+                 onClick={addOption}
+               >
+                 <Plus className="w-4 h-4 mr-2" />
+                 Add Option
+               </Button>
+               <Button
+                 type="button"
+                 variant="outline"
+                 size="sm"
+                 onClick={clearAllOptions}
+               >
+                 Clear All
+               </Button>
+             </div>
+
+             {field.type === "multiple-choice" && (
+               <div className="flex items-center gap-2 mt-3">
+                 <Switch
+                   checked={field.allowOther || false}
+                   onCheckedChange={(checked) =>
+                     updateField(field.id, { allowOther: checked })
+                   }
+                 />
+                 <Label>Allow "Other" option</Label>
+               </div>
+             )}
+           </div>
+         )}
+
+         {/* Rating field settings */}
+         {field.type === "rating" && (
+           <div>
+             <Label>Maximum Rating</Label>
+             <Select
+               value={field.maxRating?.toString()}
+               onValueChange={(value) =>
+                 updateField(field.id, { maxRating: parseInt(value) })
+               }
+             >
+               <SelectTrigger className="w-32">
+                 <SelectValue />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="3">3 Stars</SelectItem>
+                 <SelectItem value="5">5 Stars</SelectItem>
+                 <SelectItem value="10">10 Stars</SelectItem>
+               </SelectContent>
+             </Select>
+           </div>
+         )}
+
+         {/* Linear scale settings */}
+         {field.type === "linear-scale" && (
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+             <div className="grid grid-cols-2 gap-2">
+               <div>
+                 <Label>Min Scale</Label>
+                 <Input
+                   type="number"
+                   value={field.minScale || 1}
+                   onChange={(e) =>
+                     updateField(field.id, {
+                       minScale: parseInt(e.target.value) || 1,
+                     })
+                   }
+                 />
+               </div>
+               <div>
+                 <Label>Max Scale</Label>
+                 <Input
+                   type="number"
+                   value={field.maxScale || 10}
+                   onChange={(e) =>
+                     updateField(field.id, {
+                       maxScale: parseInt(e.target.value) || 10,
+                     })
+                   }
+                 />
+               </div>
+             </div>
+             <div className="grid grid-cols-2 gap-2">
+               <div>
+                 <Label>Min Label</Label>
+                 <Input
+                   value={field.scaleLabels?.min || ""}
+                   onChange={(e) =>
+                     updateField(field.id, {
+                       scaleLabels: {
+                         ...field.scaleLabels,
+                         min: e.target.value,
+                       },
+                     })
+                   }
+                   placeholder="e.g., Poor"
+                 />
+               </div>
+               <div>
+                 <Label>Max Label</Label>
+                 <Input
+                   value={field.scaleLabels?.max || ""}
+                   onChange={(e) =>
+                     updateField(field.id, {
+                       scaleLabels: {
+                         ...field.scaleLabels,
+                         max: e.target.value,
+                       },
+                     })
+                   }
+                   placeholder="e.g., Excellent"
+                 />
+               </div>
+             </div>
+           </div>
+         )}
+
+         {/* File upload settings */}
+         {field.type === "file-upload" && (
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+             <div>
+               <Label>Max File Size (MB)</Label>
+               <Input
+                 type="number"
+                 value={field.maxFileSize || 10}
+                 onChange={(e) =>
+                   updateField(field.id, {
+                     maxFileSize: parseInt(e.target.value) || 10,
+                   })
+                 }
+               />
+             </div>
+             <div>
+               <Label>Max Files</Label>
+               <Input
+                 type="number"
+                 value={field.maxFiles || 1}
+                 onChange={(e) =>
+                   updateField(field.id, {
+                     maxFiles: parseInt(e.target.value) || 1,
+                   })
+                 }
+               />
+             </div>
+           </div>
+         )}
+
+         {/* Assignment mode - correct answer */}
+         {settings.assignmentMode && (
+           <div className="border-t pt-3 mt-3">
+             <Label>Correct Answer (Assignment Mode)</Label>
+             {field.type === "multiple-choice" || field.type === "dropdown" ? (
+               <Select
+                 value={field.correctAnswer}
+                 onValueChange={(value) =>
+                   updateField(field.id, { correctAnswer: value })
+                 }
+               >
+                 <SelectTrigger>
+                   <SelectValue placeholder="Select correct answer" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {field.options?.map((option, index) => (
+                     <SelectItem key={index} value={option}>
+                       {option}
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+             ) : field.type === "checkbox" ? (
+               <div className="space-y-2">
+                 <Label className="text-sm">Select correct answers:</Label>
+                 {field.options?.map((option, index) => (
+                   <div key={index} className="flex items-center gap-2">
+                     <input
+                       type="checkbox"
+                       checked={(field.correctAnswer || []).includes(option)}
+                       onChange={(e) => {
+                         const current = field.correctAnswer || [];
+                         if (e.target.checked) {
+                           updateField(field.id, {
+                             correctAnswer: [...current, option],
+                           });
+                         } else {
+                           updateField(field.id, {
+                             correctAnswer: current.filter(
+                               (item: string) => item !== option
+                             ),
+                           });
+                         }
+                       }}
+                     />
+                     <span className="text-sm">{option}</span>
+                   </div>
+                 ))}
+               </div>
+             ) : field.type === "yes-no" ? (
+               <Select
+                 value={field.correctAnswer}
+                 onValueChange={(value) =>
+                   updateField(field.id, { correctAnswer: value })
+                 }
+               >
+                 <SelectTrigger>
+                   <SelectValue placeholder="Select correct answer" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   <SelectItem value="yes">Yes</SelectItem>
+                   <SelectItem value="no">No</SelectItem>
+                 </SelectContent>
+               </Select>
+             ) : field.type === "rating" ? (
+               <Input
+                 type="number"
+                 min="1"
+                 max={field.maxRating || 5}
+                 value={field.correctAnswer || ""}
+                 onChange={(e) =>
+                   updateField(field.id, {
+                     correctAnswer: parseInt(e.target.value) || undefined,
+                   })
+                 }
+                 placeholder="Enter correct rating"
+               />
+             ) : field.type === "linear-scale" ? (
+               <Input
+                 type="number"
+                 min={field.minScale || 1}
+                 max={field.maxScale || 10}
+                 value={field.correctAnswer || ""}
+                 onChange={(e) =>
+                   updateField(field.id, {
+                     correctAnswer: parseInt(e.target.value) || undefined,
+                   })
+                 }
+                 placeholder="Enter correct scale value"
+               />
+             ) : (
+               <Input
+                 value={field.correctAnswer || ""}
+                 onChange={(e) =>
+                   updateField(field.id, { correctAnswer: e.target.value })
+                 }
+                 placeholder="Enter correct answer"
+               />
+             )}
+             <div className="mt-2">
+               <Label>Explanation</Label>
+               <Textarea
+                 value={field.explanation || ""}
+                 onChange={(e) =>
+                   updateField(field.id, { explanation: e.target.value })
+                 }
+                 placeholder="Explain why this is the correct answer"
+                 className="h-20"
+               />
+             </div>
+           </div>
+         )}
+
+         <div className="flex items-center gap-4 pt-2 border-t">
+           <div className="flex items-center gap-2">
+             <Switch
+               checked={field.required}
+               onCheckedChange={(checked) =>
+                 updateField(field.id, { required: checked })
+               }
+             />
+             <Label>Required field</Label>
+           </div>
+         </div>
+       </div>
+     </div>
+   );
+ };
 
   if (status === "loading") {
     return (

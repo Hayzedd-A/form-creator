@@ -37,7 +37,10 @@ import {
   ChevronDown,
   ChevronUp,
   HelpCircle,
+  Upload,
 } from "lucide-react";
+import { PREDEFINED_CATEGORIES, PREDEFINED_OPTIONS } from "@/lib/datas";
+import ImportOptionsDialog from "@/components/ImportOptionDialog";
 
 interface FormField {
   id: string;
@@ -726,11 +729,24 @@ export default function EditForm() {
                           "allowedEmails",
                           e.target.value
                             .split("\n")
-                            .filter((email) => email.trim())
+                            .map((email) => email.trim())
+                            .filter(
+                              (email, index, arr) =>
+                                // Keep empty lines during editing for better UX
+                                email !== "" || index === arr.length - 1
+                            )
                         )
                       }
-                      placeholder="user@example.com"
-                      rows={3}
+                      onKeyDown={(e) => {
+                        // Ensure Enter key works for new lines
+                        if (e.key === "Enter") {
+                          e.stopPropagation();
+                          // Don't prevent default - let textarea handle it naturally
+                        }
+                      }}
+                      placeholder="user@example.com&#10;admin@example.com&#10;team@example.com"
+                      rows={5}
+                      className="font-mono text-sm"
                     />
                   </div>
                 </CardContent>
@@ -803,9 +819,20 @@ export default function EditForm() {
                     <Input
                       id="openDate"
                       type="datetime-local"
-                      value={settings.openDate || ""}
+                      value={
+                        settings.openDate
+                          ? new Date(settings.openDate)
+                              .toISOString()
+                              .slice(0, 16)
+                          : ""
+                      }
                       onChange={(e) =>
-                        updateSettings("openDate", e.target.value)
+                        updateSettings(
+                          "openDate",
+                          e.target.value
+                            ? new Date(e.target.value).toISOString()
+                            : ""
+                        )
                       }
                     />
                   </div>
@@ -814,9 +841,20 @@ export default function EditForm() {
                     <Input
                       id="closeDate"
                       type="datetime-local"
-                      value={settings.closeDate || ""}
+                      value={
+                        settings.closeDate
+                          ? new Date(settings.closeDate)
+                              .toISOString()
+                              .slice(0, 16)
+                          : ""
+                      }
                       onChange={(e) =>
-                        updateSettings("closeDate", e.target.value)
+                        updateSettings(
+                          "closeDate",
+                          e.target.value
+                            ? new Date(e.target.value).toISOString()
+                            : ""
+                        )
                       }
                     />
                   </div>
@@ -948,14 +986,18 @@ export default function EditForm() {
                         <Input
                           id="primaryColor"
                           type="color"
-                          value={settings?.customTheme?.primaryColor || "#3b82f6"}
+                          value={
+                            settings?.customTheme?.primaryColor || "#3b82f6"
+                          }
                           onChange={(e) =>
                             updateTheme("primaryColor", e.target.value)
                           }
                           className="w-16 h-10"
                         />
                         <Input
-                          value={settings?.customTheme?.primaryColor || "#3b82f6"}
+                          value={
+                            settings?.customTheme?.primaryColor || "#3b82f6"
+                          }
                           onChange={(e) =>
                             updateTheme("primaryColor", e.target.value)
                           }
@@ -1629,14 +1671,68 @@ function FieldSpecificOptions({
           </div>
         </div>
       );
-
+    // Update the multiple-choice, checkbox, dropdown case in FieldSpecificOptions
+    // Update the multiple-choice, checkbox, dropdown case in FieldSpecificOptions
     case "multiple-choice":
     case "checkbox":
     case "dropdown":
       return (
         <div className="space-y-4">
           <div>
-            <Label>Options</Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label>Options</Label>
+              <div className="flex gap-2">
+                <Select
+                  onValueChange={(value) => {
+                    if (
+                      value &&
+                      PREDEFINED_OPTIONS[
+                        value as keyof typeof PREDEFINED_OPTIONS
+                      ]
+                    ) {
+                      const predefinedOptions =
+                        PREDEFINED_OPTIONS[
+                          value as keyof typeof PREDEFINED_OPTIONS
+                        ];
+                      onUpdate({ options: predefinedOptions });
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Load predefined options" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PREDEFINED_CATEGORIES.map((category) => (
+                      <div key={category.label}>
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                          {category.label}
+                        </div>
+                        {category.options.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option
+                              .replace(/([A-Z])/g, " $1")
+                              .replace(/^./, (str) => str.toUpperCase())}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <ImportOptionsDialog
+                  onImport={(importedOptions) =>
+                    onUpdate({ options: importedOptions })
+                  }
+                  trigger={
+                    <Button variant="outline" size="sm">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Import
+                    </Button>
+                  }
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               {field.options?.map((option, index) => (
                 <div key={index} className="flex gap-2">
@@ -1656,18 +1752,28 @@ function FieldSpecificOptions({
                   </Button>
                 </div>
               ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addOption}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Option
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addOption}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Option
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onUpdate({ options: [] })}
+                >
+                  Clear All
+                </Button>
+              </div>
             </div>
           </div>
-
+          {/* Rest of the existing code for this case */}
           {field.type === "multiple-choice" && (
             <div className="flex items-center gap-2">
               <input
