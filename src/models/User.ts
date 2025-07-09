@@ -4,6 +4,8 @@ export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
+  image: string;
+  cloudinaryPublicId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +28,14 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: [true, "Name is required"],
       trim: true,
+    },
+    image: {
+      type: String,
+      default: null,
+    },
+    cloudinaryPublicId: {
+      type: String,
+      default: null,
     },
   },
   {

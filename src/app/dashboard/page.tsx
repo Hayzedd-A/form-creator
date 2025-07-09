@@ -1,55 +1,106 @@
-'use client'
+"use client";
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, FileText, BarChart3, Settings } from 'lucide-react'
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Plus,
+  FileText,
+  BarChart3,
+  Settings,
+  LogOut,
+  User,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import UserMenu from "@/components/UserMenu";
 
 interface Form {
-  _id: string
-  title: string
-  description?: string
-  slug: string
-  createdAt: string
+  _id: string;
+  title: string;
+  description?: string;
+  slug: string;
+  createdAt: string;
   _count?: {
-    responses: number
-  }
+    responses: number;
+  };
 }
 
 export default function Dashboard() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
-  const [forms, setForms] = useState<Form[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [forms, setForms] = useState<Form[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
-    if (status === 'loading') return
+    if (status === "loading") return;
     if (!session) {
-      router.push('/auth/signin')
-      return
+      router.push("/auth/signin");
+      return;
     }
-    
-    fetchForms()
-  }, [session, status, router])
+
+    fetchForms();
+  }, [session, status, router]);
 
   const fetchForms = async () => {
     try {
-      const response = await fetch('/api/forms')
+      const response = await fetch("/api/forms");
       if (response.ok) {
-        const data = await response.json()
-        setForms(data.forms)
+        const data = await response.json();
+        setForms(data.forms);
       }
     } catch (error) {
-      console.error('Error fetching forms:', error)
+      console.error("Error fetching forms:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  if (status === 'loading' || loading) {
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut({
+        redirect: false,
+        callbackUrl: "/auth/signin",
+      });
+      toast.success("Logged out successfully");
+      router.push("/auth/signin");
+    } catch (error) {
+      toast.error("Error logging out");
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  if (status === "loading" || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -57,11 +108,11 @@ export default function Dashboard() {
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!session) {
-    return null
+    return null;
   }
 
   return (
@@ -71,14 +122,22 @@ export default function Dashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {session.user?.name}</p>
+              <p className="text-gray-600">
+                Welcome back, {session.user?.name}
+              </p>
             </div>
-            <Button asChild>
-              <Link href="/forms/create">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Form
-              </Link>
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button asChild>
+                <Link href="/forms/create">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Form
+                </Link>
+              </Button>
+
+              {/* User Menu Dropdown */}
+
+              <UserMenu />
+            </div>
           </div>
         </div>
       </div>
@@ -94,32 +153,41 @@ export default function Dashboard() {
               <div className="text-2xl font-bold">{forms.length}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Responses</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Responses
+              </CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {forms.reduce((acc, form) => acc + (form._count?.responses || 0), 0)}
+                {forms.reduce(
+                  (acc, form) => acc + (form._count?.responses || 0),
+                  0
+                )}
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Forms</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Active Forms
+              </CardTitle>
               <Settings className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{forms.length}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg. Response Rate</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Avg. Response Rate
+              </CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -129,13 +197,17 @@ export default function Dashboard() {
         </div>
 
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Forms</h2>
-          
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Your Forms
+          </h2>
+
           {forms.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <FileText className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No forms yet</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No forms yet
+                </h3>
                 <p className="text-gray-600 mb-4 text-center">
                   Get started by creating your first form
                 </p>
@@ -150,11 +222,14 @@ export default function Dashboard() {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {forms.map((form) => (
-                <Card key={form._id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={form._id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardHeader>
                     <CardTitle className="text-lg">{form.title}</CardTitle>
                     <CardDescription>
-                      {form.description || 'No description'}
+                      {form.description || "No description"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -171,10 +246,14 @@ export default function Dashboard() {
                         <Link href={`/forms/${form.slug}/edit`}>Edit</Link>
                       </Button>
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/forms/${form.slug}/responses`}>Responses</Link>
+                        <Link href={`/forms/${form.slug}/responses`}>
+                          Responses
+                        </Link>
                       </Button>
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/form/${form.slug}`} target="_blank">View</Link>
+                        <Link href={`/form/${form.slug}`} target="_blank">
+                          View
+                        </Link>
                       </Button>
                     </div>
                   </CardContent>
@@ -185,5 +264,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

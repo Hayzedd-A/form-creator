@@ -15,7 +15,7 @@ export default function Home() {
           </p>
           <div className="flex gap-4 justify-center">
             <Button asChild size="lg">
-              <Link href="/auth/signup">Get Started</Link>
+              <Link href="/dashboard">Get Started</Link>
             </Button>
             <Button variant="outline" asChild size="lg">
               <Link href="/auth/signin">Sign In</Link>
