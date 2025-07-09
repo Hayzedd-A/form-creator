@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Form from "@/models/Form";
 import FormResponse from "@/models/FormResponse";
+// import Response from "@/models/Response";
 
 // GET - Fetch form by slug
 export async function GET(
@@ -9,25 +10,146 @@ export async function GET(
   context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const params = await context.params
-    // const session = await getServerSession(authOptions);
-
-    // if (!session?.user?.id) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
-
+    const params = await context.params;
+    const url = new URL(request.url);
+    const email = url.searchParams.get('email');
+    
     await dbConnect();
 
     const form = await Form.findOne({
       slug: params.slug,
-      // userId: session.user.id,
     }).lean();
 
     if (!form) {
       return NextResponse.json({ error: "Form not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ form });
+    // Check if form is active
+    if (!form.isActive) {
+      return NextResponse.json({ error: "Form is not active" }, { status: 403 });
+    }
+
+    // Check date restrictions
+    const now = new Date();
+    const isFormAccessible = () => {
+      if (form.settings.openDate && now < new Date(form.settings.openDate)) {
+        return false;
+      }
+      if (form.settings.closeDate && now > new Date(form.settings.closeDate)) {
+        return false;
+      }
+      return true;
+    };
+
+    if (!isFormAccessible()) {
+      return NextResponse.json({ 
+        error: "Form is not accessible at this time",
+        openDate: form.settings.openDate,
+        closeDate: form.settings.closeDate
+      }, { status: 403 });
+    }
+
+    // Check email restrictions
+    if (form.settings.allowedEmails && form.settings.allowedEmails.length > 0) {
+      if (!email) {
+        // Return form metadata without fields if email verification is required
+        return NextResponse.json({
+          form: {
+            _id: form._id,
+            title: form.title,
+            description: form.description,
+            slug: form.slug,
+            fields: [], // Empty fields array
+            settings: {
+              ...form.settings,
+              // Remove sensitive settings
+              allowedEmails: [], // Don't expose allowed emails list
+            },
+            isActive: form.isActive,
+            createdAt: form.createdAt,
+            updatedAt: form.updatedAt,
+          },
+          requiresEmailVerification: true,
+          message: "Email verification required to access form fields"
+        });
+      }
+
+      // Verify email is in allowed list
+      if (!form.settings.allowedEmails.includes(email)) {
+        return NextResponse.json({ 
+          error: "Your email is not authorized to access this form" 
+        }, { status: 403 });
+      }
+    }
+
+    // Check if user already submitted (if email is provided)
+    let alreadySubmitted = false;
+    if (email && (form.settings.limitOneResponse || form.settings.limitByEmail)) {
+      const existingResponse = await FormResponse.findOne({
+        formId: form._id,
+        submitterEmail: email,
+        status: 'completed'
+      });
+      
+      if (existingResponse) {
+        alreadySubmitted = true;
+      }
+    }
+
+    // Check IP-based submission limit (if applicable)
+    if (form.settings.limitByIP && !alreadySubmitted) {
+      const clientIP = request.headers.get('x-forwarded-for') || 
+                      request.headers.get('x-real-ip') || 
+                      'unknown';
+      
+      if (clientIP !== 'unknown') { 
+        const existingIPResponse = await FormResponse.findOne({
+          formId: form._id,
+          submitterIp: clientIP,
+          status: 'completed'
+        });
+        
+        if (existingIPResponse) {
+          alreadySubmitted = true;
+        }
+      }
+    }
+
+    // Clean form data - remove sensitive information
+    const cleanedFields = form.fields.map((field: any) => {
+      const cleanedField = { ...field };
+      
+      // Remove correct answers and explanations for security
+      delete cleanedField.correctAnswer;
+      delete cleanedField.explanation;
+      
+      return cleanedField;
+    });
+
+    const cleanedForm = {
+      _id: form._id,
+      title: form.title,
+      description: form.description,
+      slug: form.slug,
+      fields: cleanedFields,
+      settings: {
+        ...form.settings,
+        // Remove sensitive settings that shouldn't be exposed to client
+        allowedEmails: [], // Don't expose the actual email list
+        // Keep other settings that are needed for form functionality
+      },
+      isActive: form.isActive,
+      createdAt: form.createdAt,
+      updatedAt: form.updatedAt,
+      totalPoints: form.totalPoints,
+    };
+
+    return NextResponse.json({ 
+      form: cleanedForm,
+      alreadySubmitted,
+      requiresEmailVerification: false
+    });
+
   } catch (error) {
     console.error("Error fetching form:", error);
     return NextResponse.json(

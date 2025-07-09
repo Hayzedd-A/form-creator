@@ -20,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
@@ -34,6 +33,8 @@ import {
   Lock,
   AlertCircle,
   CheckCircle2,
+  Timer,
+  FileText,
 } from "lucide-react";
 
 interface FormField {
@@ -84,6 +85,7 @@ interface FormField {
   width?: "full" | "half";
   correctAnswer?: any;
   explanation?: string;
+  points?: number;
 }
 
 interface Form {
@@ -119,7 +121,12 @@ interface Form {
     };
     redirectUrl?: string;
     customSuccessMessage?: string;
+    passingScore?: number;
+    showCorrectAnswers?: boolean;
+    allowRetakes?: boolean;
+    maxRetakes?: number;
   };
+  totalPoints?: number;
 }
 
 interface AssignmentResult {
@@ -160,38 +167,61 @@ export default function PublicForm() {
   useEffect(() => {
     if (form && form.settings.showProgressBar) {
       const totalFields = form.fields.length;
-      const completedFields = Object.keys(responses).filter(
-        (key) =>
-          responses[key] !== "" &&
-          responses[key] !== null &&
-          responses[key] !== undefined
-      ).length;
-      setProgress((completedFields / totalFields) * 100);
+      const completedFields = Object.keys(responses).filter((key) => {
+        const value = responses[key];
+        if (value === null || value === undefined || value === "") return false;
+        if (Array.isArray(value) && value.length === 0) return false;
+        return true;
+      }).length;
+      setProgress(totalFields > 0 ? (completedFields / totalFields) * 100 : 0);
     }
   }, [responses, form]);
 
   const fetchForm = async () => {
     try {
-      const response = await fetch(`/api/forms/${slug}`);
+      const queryParams = userEmail
+        ? `?email=${encodeURIComponent(userEmail)}`
+        : "";
+      const response = await fetch(`/api/forms/${slug}${queryParams}`);
+
       if (response.ok) {
         const data = await response.json();
+
+        // Handle email verification requirement
+        if (data.requiresEmailVerification) {
+          setForm(data.form);
+          setCurrentStep("email");
+          return;
+        }
+
         setForm(data.form);
 
         // Check if already submitted
         if (data.alreadySubmitted) {
           setAlreadySubmitted(true);
           setCurrentStep("submitted");
-        } else if (data.form.settings.collectEmail) {
+        } else if (data.form.settings.collectEmail && !userEmail) {
           setCurrentStep("email");
         } else {
           setCurrentStep("form");
         }
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || "Form not found");
+
+        // Handle specific error cases
+        if (response.status === 403) {
+          if (errorData.openDate || errorData.closeDate) {
+            // Form timing restrictions will be handled by existing logic
+            setForm({ ...errorData, fields: [] });
+          } else {
+            toast.error(errorData.error || "Access denied");
+          }
+        } else {
+          toast.error(errorData.error || "Form not found");
+        }
       }
     } catch (error: unknown) {
-      console.log(error)
+      console.log(error);
       toast.error("Error loading form");
     } finally {
       setLoading(false);
@@ -212,35 +242,33 @@ export default function PublicForm() {
       return;
     }
 
-    // Check if email is allowed (if restrictions exist)
-    if (
-      form?.settings.allowedEmails.length > 0 &&
-      !form.settings.allowedEmails.includes(emailInput)
-    ) {
-      toast.error("Your email is not authorized to access this form");
-      return;
-    }
+    setUserEmail(emailInput);
 
-    // Check if already submitted by email
+    // Refetch form with email to get full form data
     try {
-      const response = await fetch(`/api/forms/${slug}/check-submission`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailInput }),
-      });
+      const response = await fetch(
+        `/api/forms/${slug}?email=${encodeURIComponent(emailInput)}`
+      );
 
-      const data = await response.json();
-      if (data.alreadySubmitted) {
-        setAlreadySubmitted(true);
-        setCurrentStep("submitted");
-        return;
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.alreadySubmitted) {
+          setAlreadySubmitted(true);
+          setCurrentStep("submitted");
+          return;
+        }
+
+        setForm(data.form);
+        setCurrentStep("form");
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Access denied");
       }
     } catch (error) {
-      console.error("Error checking submission:", error);
+      console.error("Error verifying email:", error);
+      toast.error("Error verifying email access");
     }
-
-    setUserEmail(emailInput);
-    setCurrentStep("form");
   };
 
   const validateField = (field: FormField, value: any): string | null => {
@@ -399,13 +427,18 @@ export default function PublicForm() {
 
     const fieldWrapper = (children: React.ReactNode) => (
       <div
-        className={`space-y-2 ${
+        className={`space-y-3 ${
           field.width === "half" ? "md:col-span-1" : "md:col-span-2"
         }`}
       >
-        <Label className="block text-sm font-medium">
+        <Label style={{borderTop: "2px solid lightgray"}} className="block  font-bold text-lg border-t-gray-500 pt-2 text-gray-700">
           {field.label}
           {field.required && <span className="text-red-500 ml-1">*</span>}
+          {field.points && form?.settings.assignmentMode && (
+            <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+              {field.points} {field.points === 1 ? "point" : "points"}
+            </span>
+          )}
         </Label>
         {field.description && (
           <p className="text-sm text-gray-600">{field.description}</p>
@@ -428,7 +461,11 @@ export default function PublicForm() {
             onChange={(e) => handleInputChange(field.id, e.target.value)}
             placeholder={field.placeholder}
             maxLength={field.maxLength}
-            className={fieldError ? "border-red-500" : ""}
+            className={`transition-all duration-200 ${
+              fieldError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-primary"
+            }`}
           />
         );
 
@@ -439,7 +476,11 @@ export default function PublicForm() {
             onChange={(e) => handleInputChange(field.id, e.target.value)}
             placeholder={field.placeholder}
             maxLength={field.maxLength}
-            className={`resize-none h-24 ${fieldError ? "border-red-500" : ""}`}
+            className={`resize-none h-24 transition-all duration-200 ${
+              fieldError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-primary"
+            }`}
           />
         );
 
@@ -450,7 +491,11 @@ export default function PublicForm() {
             value={fieldValue || ""}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
             placeholder={field.placeholder || "Enter your email"}
-            className={fieldError ? "border-red-500" : ""}
+            className={`transition-all duration-200 ${
+              fieldError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-primary"
+            }`}
           />
         );
 
@@ -464,7 +509,11 @@ export default function PublicForm() {
             min={field.minValue}
             max={field.maxValue}
             step={field.step}
-            className={fieldError ? "border-red-500" : ""}
+            className={`transition-all duration-200 ${
+              fieldError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-primary"
+            }`}
           />
         );
 
@@ -475,7 +524,11 @@ export default function PublicForm() {
             value={fieldValue || ""}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
             placeholder={field.placeholder || "Enter phone number"}
-            className={fieldError ? "border-red-500" : ""}
+            className={`transition-all duration-200 ${
+              fieldError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-primary"
+            }`}
           />
         );
 
@@ -486,7 +539,11 @@ export default function PublicForm() {
             value={fieldValue || ""}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
             placeholder={field.placeholder || "https://example.com"}
-            className={fieldError ? "border-red-500" : ""}
+            className={`transition-all duration-200 ${
+              fieldError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-primary"
+            }`}
           />
         );
 
@@ -498,7 +555,11 @@ export default function PublicForm() {
             onChange={(e) => handleInputChange(field.id, e.target.value)}
             min={field.minDate}
             max={field.maxDate}
-            className={fieldError ? "border-red-500" : ""}
+            className={`transition-all duration-200 ${
+              fieldError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-primary"
+            }`}
           />
         );
 
@@ -508,7 +569,11 @@ export default function PublicForm() {
             type="time"
             value={fieldValue || ""}
             onChange={(e) => handleInputChange(field.id, e.target.value)}
-            className={fieldError ? "border-red-500" : ""}
+            className={`transition-all duration-200 ${
+              fieldError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-primary"
+            }`}
           />
         );
 
@@ -520,17 +585,21 @@ export default function PublicForm() {
             onChange={(e) => handleInputChange(field.id, e.target.value)}
             min={field.minDate}
             max={field.maxDate}
-            className={fieldError ? "border-red-500" : ""}
+            className={`transition-all duration-200 ${
+              fieldError
+                ? "border-red-500 focus:border-red-500"
+                : "focus:border-primary"
+            }`}
           />
         );
 
       case "multiple-choice":
         return fieldWrapper(
-          <div className="space-y-2">
+          <div className="space-y-3">
             {field.options?.map((option, index) => (
               <label
                 key={index}
-                className="flex items-center space-x-2 cursor-pointer"
+                className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg border hover:bg-gray-50 transition-colors duration-200"
               >
                 <input
                   type={field.allowMultiple ? "checkbox" : "radio"}
@@ -556,13 +625,13 @@ export default function PublicForm() {
                       handleInputChange(field.id, option);
                     }
                   }}
-                  className="rounded"
+                  className="rounded text-primary focus:ring-primary"
                 />
-                <span>{option}</span>
+                <span className="text-sm">{option}</span>
               </label>
             ))}
             {field.allowOther && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3 p-3 rounded-lg border">
                 <input
                   type={field.allowMultiple ? "checkbox" : "radio"}
                   name={field.id}
@@ -582,7 +651,7 @@ export default function PublicForm() {
                       }
                     }
                   }}
-                  className="rounded"
+                  className="rounded text-primary focus:ring-primary"
                 />
                 <Input
                   placeholder="Other (please specify)"
@@ -599,11 +668,11 @@ export default function PublicForm() {
 
       case "checkbox":
         return fieldWrapper(
-          <div className="space-y-2">
+          <div className="space-y-3">
             {field.options?.map((option, index) => (
               <label
                 key={index}
-                className="flex items-center space-x-2 cursor-pointer"
+                className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg border hover:bg-gray-50 transition-colors duration-200"
               >
                 <input
                   type="checkbox"
@@ -620,9 +689,9 @@ export default function PublicForm() {
                       );
                     }
                   }}
-                  className="rounded"
+                  className="rounded text-primary focus:ring-primary"
                 />
-                <span>{option}</span>
+                <span className="text-sm">{option}</span>
               </label>
             ))}
           </div>
@@ -634,7 +703,11 @@ export default function PublicForm() {
             value={fieldValue || ""}
             onValueChange={(value) => handleInputChange(field.id, value)}
           >
-            <SelectTrigger className={fieldError ? "border-red-500" : ""}>
+            <SelectTrigger
+              className={`transition-all duration-200 ${
+                fieldError ? "border-red-500" : "focus:border-primary"
+              }`}
+            >
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
@@ -650,61 +723,63 @@ export default function PublicForm() {
       case "yes-no":
         return fieldWrapper(
           <div className="flex space-x-4">
-            <label className="flex items-center space-x-2 cursor-pointer">
+            <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-lg border hover:bg-gray-50 transition-colors duration-200">
               <input
                 type="radio"
                 name={field.id}
                 value="yes"
                 checked={fieldValue === "yes"}
                 onChange={(e) => handleInputChange(field.id, e.target.value)}
-                className="rounded"
+                className="rounded text-primary focus:ring-primary"
               />
-              <span>Yes</span>
+              <span className="text-sm">Yes</span>
             </label>
-            <label className="flex items-center space-x-2 cursor-pointer">
+            <label className="flex items-center space-x-2 cursor-pointer p-3 rounded-lg border hover:bg-gray-50 transition-colors duration-200">
               <input
                 type="radio"
                 name={field.id}
                 value="no"
                 checked={fieldValue === "no"}
                 onChange={(e) => handleInputChange(field.id, e.target.value)}
-                className="rounded"
+                className="rounded text-primary focus:ring-primary"
               />
-              <span>No</span>
+              <span className="text-sm">No</span>
             </label>
           </div>
         );
 
       case "rating":
         return fieldWrapper(
-          <div className="flex space-x-1">
-            {Array.from({ length: field.maxRating || 5 }, (_, index) => (
-              <button
-                key={index}
-                type="button"
-                onClick={() => handleInputChange(field.id, index + 1)}
-                className="focus:outline-none transition-colors"
-              >
-                <Star
-                  className={`w-6 h-6 ${
-                    (fieldValue || 0) > index
-                      ? "text-yellow-400 fill-current"
-                      : "text-gray-300 hover:text-yellow-200"
-                  }`}
-                />
-              </button>
-            ))}
+          <div className="space-y-2">
+            <div className="flex space-x-1">
+              {Array.from({ length: field.maxRating || 5 }, (_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => handleInputChange(field.id, index + 1)}
+                  className="focus:outline-none transition-all duration-200 hover:scale-110"
+                >
+                  <Star
+                    className={`w-8 h-8 ${
+                      (fieldValue || 0) > index
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300 hover:text-yellow-200"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
             {fieldValue && (
-              <span className="ml-2 text-sm text-gray-600">
-                {fieldValue} out of {field.maxRating || 5}
-              </span>
+              <p className="text-sm text-gray-600">
+                {fieldValue} out of {field.maxRating || 5} stars
+              </p>
             )}
           </div>
         );
 
       case "linear-scale":
         return fieldWrapper(
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="flex justify-between text-sm text-gray-600">
               <span>{field.scaleLabels?.min || field.minScale || 1}</span>
               <span>{field.scaleLabels?.max || field.maxScale || 10}</span>
@@ -727,9 +802,9 @@ export default function PublicForm() {
                         onChange={(e) =>
                           handleInputChange(field.id, parseInt(e.target.value))
                         }
-                        className="mb-1"
+                        className="mb-2 text-primary focus:ring-primary"
                       />
-                      <span className="text-sm">{value}</span>
+                      <span className=" font-bold text-lg border-t-gray-500 pt-2">{value}</span>
                     </label>
                   );
                 }
@@ -740,36 +815,40 @@ export default function PublicForm() {
 
       case "file-upload":
         return fieldWrapper(
-          <div className="space-y-2">
-            <input
-              type="file"
-              multiple={field.maxFiles && field.maxFiles > 1}
-              accept={field.allowedFileTypes?.join(",") || "image/*"}
-              onChange={(e) => {
-                const files = Array.from(e.target.files || []);
-                if (field.maxFiles && files.length > field.maxFiles) {
-                  toast.error(`Maximum ${field.maxFiles} files allowed`);
-                  return;
-                }
+          <div className="space-y-3">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors duration-200">
+              <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+              <input
+                type="file"
+                multiple={field.maxFiles && field.maxFiles > 1}
+                accept={field.allowedFileTypes?.join(",") || "image/*"}
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (field.maxFiles && files.length > field.maxFiles) {
+                    toast.error(`Maximum ${field.maxFiles} files allowed`);
+                    return;
+                  }
 
-                // Check file sizes
-                const maxSize = (field.maxFileSize || 10) * 1024 * 1024; // Convert MB to bytes
-                const oversizedFiles = files.filter(
-                  (file) => file.size > maxSize
-                );
-                if (oversizedFiles.length > 0) {
-                  toast.error(
-                    `Files must be smaller than ${field.maxFileSize || 10}MB`
+                  // Check file sizes
+                  const maxSize = (field.maxFileSize || 10) * 1024 * 1024; // Convert MB to bytes
+                  const oversizedFiles = files.filter(
+                    (file) => file.size > maxSize
                   );
-                  return;
-                }
+                  if (oversizedFiles.length > 0) {
+                    toast.error(
+                      `Files must be smaller than ${field.maxFileSize || 10}MB`
+                    );
+                    return;
+                  }
 
-                handleInputChange(field.id, files);
-              }}
-              className={`w-full px-3 py-2 border rounded-md ${
-                fieldError ? "border-red-500" : "border-input"
-              }`}
-            />
+                  handleInputChange(field.id, files);
+                }}
+                className="w-full"
+              />
+              <p className="text-sm text-gray-600 mt-2">
+                Click to upload or drag and drop
+              </p>
+            </div>
             <div className="text-xs text-gray-500">
               {field.maxFileSize &&
                 `Max size: ${field.maxFileSize}MB per file. `}
@@ -784,23 +863,23 @@ export default function PublicForm() {
 
       case "signature":
         return fieldWrapper(
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             <PenTool className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm text-gray-600">
-              Signature field (implementation needed)
+            <p className="text-sm text-gray-600 mb-4">
+              Type your full name as your signature
             </p>
             <Input
-              placeholder="Type your full name as signature"
+              placeholder="Type your full name"
               value={fieldValue || ""}
               onChange={(e) => handleInputChange(field.id, e.target.value)}
-              className="mt-2"
+              className="text-center font-cursive text-lg"
             />
           </div>
         );
 
       case "address":
         return fieldWrapper(
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Input
               placeholder="Street Address"
               value={fieldValue?.street || ""}
@@ -810,8 +889,9 @@ export default function PublicForm() {
                   street: e.target.value,
                 })
               }
+              className="transition-all duration-200 focus:border-primary"
             />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <Input
                 placeholder="City"
                 value={fieldValue?.city || ""}
@@ -821,6 +901,7 @@ export default function PublicForm() {
                     city: e.target.value,
                   })
                 }
+                className="transition-all duration-200 focus:border-primary"
               />
               <Input
                 placeholder="State/Province"
@@ -831,9 +912,10 @@ export default function PublicForm() {
                     state: e.target.value,
                   })
                 }
+                className="transition-all duration-200 focus:border-primary"
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <Input
                 placeholder="ZIP/Postal Code"
                 value={fieldValue?.zip || ""}
@@ -843,6 +925,7 @@ export default function PublicForm() {
                     zip: e.target.value,
                   })
                 }
+                className="transition-all duration-200 focus:border-primary"
               />
               <Input
                 placeholder="Country"
@@ -853,6 +936,7 @@ export default function PublicForm() {
                     country: e.target.value,
                   })
                 }
+                className="transition-all duration-200 focus:border-primary"
               />
             </div>
           </div>
@@ -860,7 +944,8 @@ export default function PublicForm() {
 
       default:
         return fieldWrapper(
-          <div className="text-gray-500 italic">
+          <div className="text-gray-500 italic p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <AlertCircle className="w-5 h-5 inline mr-2" />
             Unsupported field type: {field.type}
           </div>
         );
@@ -882,18 +967,46 @@ export default function PublicForm() {
     return true;
   };
 
+  // Get theme variables
+  const getThemeVars = () => {
+    const customTheme = form?.settings.customTheme || {};
+    return {
+      "--primary-color": customTheme.primaryColor || "#3b82f6",
+      "--bg-color": customTheme.backgroundColor || "#ffffff",
+      "--text-color": customTheme.textColor || "#1f2937",
+      "--font-family": customTheme.fontFamily || "inherit",
+    } as React.CSSProperties;
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={getThemeVars()}
+      >
+        <div className="text-center">
+          <div
+            className="animate-spin rounded-full h-16 w-16 border-b-2 mx-auto mb-4"
+            style={{ borderColor: "var(--primary-color)" }}
+          ></div>
+          <p
+            className="text-lg font-medium"
+            style={{ color: "var(--text-color)" }}
+          >
+            Loading form...
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!form) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={getThemeVars()}
+      >
+        <Card className="w-full max-w-md mx-4">
           <CardContent className="text-center py-12">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Form Not Found</h2>
@@ -914,14 +1027,17 @@ export default function PublicForm() {
       form.settings.closeDate && now > new Date(form.settings.closeDate);
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={getThemeVars()}
+      >
+        <Card className="w-full max-w-md mx-4">
           <CardContent className="text-center py-12">
             <Clock className="w-16 h-16 text-orange-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">
               {isNotYetOpen ? "Form Not Yet Available" : "Form Closed"}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               {isNotYetOpen
                 ? `This form will be available starting ${new Date(
                     form.settings.openDate!
@@ -930,6 +1046,12 @@ export default function PublicForm() {
                     form.settings.closeDate!
                   ).toLocaleString()}`}
             </p>
+            {isNotYetOpen && (
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                <Timer className="w-4 h-4" />
+                <span>Please check back later</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -938,8 +1060,11 @@ export default function PublicForm() {
 
   if (alreadySubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={getThemeVars()}
+      >
+        <Card className="w-full max-w-md mx-4">
           <CardContent className="text-center py-12">
             <CheckCircle2 className="w-16 h-16 text-blue-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Already Submitted</h2>
@@ -957,10 +1082,16 @@ export default function PublicForm() {
   // Email collection step
   if (currentStep === "email") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={getThemeVars()}
+      >
+        <Card className="w-full max-w-md mx-4">
           <CardHeader className="text-center">
-            <Mail className="w-12 h-12 text-primary mx-auto mb-4" />
+            <Mail
+              className="w-12 h-12 mx-auto mb-4"
+              style={{ color: "var(--primary-color)" }}
+            />
             <CardTitle>Email Required</CardTitle>
             <CardDescription>
               Please provide your email address to access this form
@@ -977,9 +1108,14 @@ export default function PublicForm() {
                   onChange={(e) => setEmailInput(e.target.value)}
                   placeholder="Enter your email"
                   required
+                  className="transition-all duration-200 focus:border-primary"
                 />
               </div>
-              <Button type="submit" className="w-full">
+              <Button
+                type="submit"
+                className="w-full transition-all duration-200"
+                style={{ backgroundColor: "var(--primary-color)" }}
+              >
                 Continue to Form
               </Button>
             </form>
@@ -988,6 +1124,7 @@ export default function PublicForm() {
       </div>
     );
   }
+
   // Assignment results step
   if (currentStep === "results" && form.settings.assignmentMode) {
     const totalQuestions = assignmentResults.length;
@@ -1000,7 +1137,7 @@ export default function PublicForm() {
         : 0;
 
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen py-8" style={getThemeVars()}>
         <div className="container mx-auto px-4 max-w-4xl">
           <Card className="mb-6">
             <CardHeader className="text-center">
@@ -1015,7 +1152,7 @@ export default function PublicForm() {
                   className="text-4xl font-bold mb-2"
                   style={{
                     color:
-                      score >= 70
+                      score >= (form.settings.passingScore || 70)
                         ? "#22c55e"
                         : score >= 50
                         ? "#f59e0b"
@@ -1028,10 +1165,16 @@ export default function PublicForm() {
                   {correctAnswers} out of {totalQuestions} correct
                 </p>
                 <Badge
-                  variant={score >= 70 ? "default" : "secondary"}
+                  variant={
+                    score >= (form.settings.passingScore || 70)
+                      ? "default"
+                      : "secondary"
+                  }
                   className="mt-2"
                 >
-                  {score >= 70 ? "Passed" : "Needs Improvement"}
+                  {score >= (form.settings.passingScore || 70)
+                    ? "Passed"
+                    : "Needs Improvement"}
                 </Badge>
               </div>
             </CardContent>
@@ -1059,11 +1202,11 @@ export default function PublicForm() {
                   <CardContent className="space-y-3">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label className="text-sm font-medium text-gray-600">
+                        <Label style={{borderTop: "2px solid lightgray"}} className=" font-bold text-lg border-t-gray-500 pt-2 text-gray-600">
                           Your Answer:
                         </Label>
                         <div
-                          className={`p-2 rounded border ${
+                          className={`p-3 rounded border ${
                             result.isCorrect
                               ? "bg-green-50 border-green-200"
                               : "bg-red-50 border-red-200"
@@ -1076,10 +1219,10 @@ export default function PublicForm() {
                         </div>
                       </div>
                       <div>
-                        <Label className="text-sm font-medium text-gray-600">
+                        <Label style={{borderTop: "2px solid lightgray"}} className=" font-bold text-lg border-t-gray-500 pt-2 text-gray-600">
                           Correct Answer:
                         </Label>
-                        <div className="p-2 rounded border bg-green-50 border-green-200">
+                        <div className="p-3 rounded border bg-green-50 border-green-200">
                           {Array.isArray(result.correctAnswer)
                             ? result.correctAnswer.join(", ")
                             : result.correctAnswer?.toString()}
@@ -1088,7 +1231,7 @@ export default function PublicForm() {
                     </div>
                     {result.explanation && (
                       <div>
-                        <Label className="text-sm font-medium text-gray-600">
+                        <Label style={{borderTop: "2px solid lightgray"}} className=" font-bold text-lg border-t-gray-500 pt-2 text-gray-600">
                           Explanation:
                         </Label>
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded">
@@ -1115,6 +1258,7 @@ export default function PublicForm() {
                 onClick={() =>
                   (window.location.href = form.settings.redirectUrl!)
                 }
+                style={{ backgroundColor: "var(--primary-color)" }}
               >
                 Continue
               </Button>
@@ -1128,8 +1272,11 @@ export default function PublicForm() {
   // Success step
   if (currentStep === "submitted") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="w-full max-w-md">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={getThemeVars()}
+      >
+        <Card className="w-full max-w-md mx-4">
           <CardContent className="text-center py-12">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-8 h-8 text-green-600" />
@@ -1145,6 +1292,7 @@ export default function PublicForm() {
                   (window.location.href = form.settings.redirectUrl!)
                 }
                 className="mt-4"
+                style={{ backgroundColor: "var(--primary-color)" }}
               >
                 Continue
               </Button>
@@ -1156,58 +1304,89 @@ export default function PublicForm() {
   }
 
   // Main form step
-  const customTheme = form.settings.customTheme || {};
-  const formStyle = {
-    "--primary-color": customTheme.primaryColor || "#3b82f6",
-    "--bg-color": customTheme.backgroundColor || "#ffffff",
-    "--text-color": customTheme.textColor || "#1f2937",
-    fontFamily: customTheme.fontFamily || "inherit",
-  } as React.CSSProperties;
+  const themeVars = getThemeVars();
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8" style={formStyle}>
+    <div
+      className="min-h-screen py-8"
+      style={{
+        ...themeVars,
+        backgroundColor: "var(--bg-color)",
+        color: "var(--text-color)",
+        fontFamily: "var(--font-family)",
+      }}
+    >
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Progress Bar */}
         {form.settings.showProgressBar && (
-          <div className="mb-6">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Progress</span>
-              <span>{Math.round(progress)}% Complete</span>
+          <div className="mb-8 bg-white rounded-lg p-4 shadow-sm">
+            <div className="flex justify-between text-sm text-gray-600 mb-3">
+              <span className="font-medium">Progress</span>
+              <span className="font-medium">
+                {Math.round(progress)}% Complete
+              </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-3">
               <div
-                className="bg-primary h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
+                className="h-3 rounded-full transition-all duration-500 ease-out"
+                style={{
+                  width: `${progress}%`,
+                  backgroundColor: "var(--primary-color)",
+                }}
               ></div>
             </div>
           </div>
         )}
 
-        <Card style={{ backgroundColor: customTheme.backgroundColor }}>
-          <CardHeader>
-            <CardTitle
-              className="text-2xl"
-              style={{ color: customTheme.textColor }}
-            >
-              {form.title}
-            </CardTitle>
+        <Card
+          className="shadow-lg"
+          style={{ backgroundColor: "var(--bg-color)" }}
+        >
+          <CardHeader className="text-center pb-6">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <FileText
+                className="w-8 h-8"
+                style={{ color: "var(--primary-color)" }}
+              />
+              <CardTitle
+                className="text-3xl font-bold"
+                style={{ color: "var(--text-color)" }}
+              >
+                {form.title}
+              </CardTitle>
+            </div>
             {form.description && (
               <CardDescription
-                className="text-base"
-                style={{ color: customTheme.textColor }}
+                className="text-lg max-w-2xl mx-auto"
+                style={{ color: "var(--text-color)", opacity: 0.8 }}
               >
                 {form.description}
               </CardDescription>
             )}
-            {form.settings.assignmentMode && (
-              <Badge variant="secondary" className="w-fit">
-                Assignment Mode - You will see results after submission
-              </Badge>
-            )}
+            <div className="flex flex-wrap justify-center gap-2 mt-4">
+              {form.settings.assignmentMode && (
+                <Badge variant="secondary" className="text-sm">
+                  <CheckCircle2 className="w-4 h-4 mr-1" />
+                  Assignment Mode
+                </Badge>
+              )}
+              {form.totalPoints && (
+                <Badge variant="outline" className="text-sm">
+                  Total Points: {form.totalPoints}
+                </Badge>
+              )}
+              {form.settings.closeDate && (
+                <Badge variant="outline" className="text-sm">
+                  <Clock className="w-4 h-4 mr-1" />
+                  Closes:{" "}
+                  {new Date(form.settings.closeDate).toLocaleDateString()}
+                </Badge>
+              )}
+            </div>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="px-8 pb-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {form.fields
                   .sort((a, b) => a.order - b.order)
                   .map((field) => (
@@ -1215,30 +1394,56 @@ export default function PublicForm() {
                   ))}
               </div>
 
-              <div className="flex justify-between items-center pt-6 border-t">
-                {form.settings.allowSaveDraft && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      localStorage.setItem(
-                        `form_draft_${slug}`,
-                        JSON.stringify(responses)
-                      );
-                      toast.success("Draft saved!");
-                    }}
-                  >
-                    Save Draft
-                  </Button>
-                )}
-                <div className="flex-1"></div>
+              <div className="flex justify-between items-center pt-8 border-t border-gray-200">
+                <div className="flex items-center gap-4">
+                  {form.settings.allowSaveDraft && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        localStorage.setItem(
+                          `form_draft_${slug}`,
+                          JSON.stringify(responses)
+                        );
+                        toast.success("Draft saved!");
+                      }}
+                      className="transition-all duration-200"
+                    >
+                      Save Draft
+                    </Button>
+                  )}
+                  {form.settings.showProgressBar && (
+                    <div className="text-sm text-gray-600">
+                      {
+                        Object.keys(responses).filter((key) => {
+                          const value = responses[key];
+                          return (
+                            value !== null &&
+                            value !== undefined &&
+                            value !== "" &&
+                            !(Array.isArray(value) && value.length === 0)
+                          );
+                        }).length
+                      }{" "}
+                      of {form.fields.length} fields completed
+                    </div>
+                  )}
+                </div>
+
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="min-w-[120px]"
-                  style={{ backgroundColor: customTheme.primaryColor }}
+                  className="min-w-[140px] text-white font-medium transition-all duration-200 hover:shadow-lg"
+                  style={{ backgroundColor: "var(--primary-color)" }}
                 >
-                  {submitting ? "Submitting..." : "Submit"}
+                  {submitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Submitting...
+                    </div>
+                  ) : (
+                    "Submit Form"
+                  )}
                 </Button>
               </div>
             </form>
@@ -1246,18 +1451,36 @@ export default function PublicForm() {
         </Card>
 
         {/* Form Footer Info */}
-        <div className="mt-4 text-center text-sm text-gray-500">
-          {form.settings.limitOneResponse && (
-            <p>• Only one response per user is allowed</p>
-          )}
-          {form.settings.closeDate && (
-            <p>
-              • Form closes on{" "}
-              {new Date(form.settings.closeDate).toLocaleString()}
-            </p>
-          )}
+        <div className="mt-6 text-center space-y-2">
+          <div
+            className="flex flex-wrap justify-center gap-4 text-sm"
+            style={{ color: "var(--text-color)", opacity: 0.7 }}
+          >
+            {form.settings.limitOneResponse && (
+              <div className="flex items-center gap-1">
+                <Lock className="w-4 h-4" />
+                <span>One response per user</span>
+              </div>
+            )}
+            {form.settings.closeDate && (
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span>
+                  Closes on {new Date(form.settings.closeDate).toLocaleString()}
+                </span>
+              </div>
+            )}
+            {form.settings.collectEmail && (
+              <div className="flex items-center gap-1">
+                <Mail className="w-4 h-4" />
+                <span>Email collection enabled</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+
