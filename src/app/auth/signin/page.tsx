@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,8 @@ export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,14 +34,25 @@ export default function SignIn() {
       const result = await signIn("credentials", {
         email,
         password,
-        redirect: false,
+        redirect: false, // Handle redirect manually
       });
 
-      if (result?.error) {
-        toast.error("Invalid credentials");
+      if (result?.ok) {
+        // Wait a moment for session to be set
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        toast.success("Signed in successful")
+        // Verify session is set
+        const session = await getSession();
+        console.log("Session after sign in:", !!session);
+
+        if (session) {
+          router.push(callbackUrl);
+        } else {
+          console.error("Session not set after successful sign in");
+        }
       } else {
-        toast.success("Signed in successfully");
-        router.push("/dashboard");
+        toast.error("Invalid credentials")
+        console.error("Sign in failed:", result?.error);
       }
     } catch (error) {
       toast.error("An error occurred");
