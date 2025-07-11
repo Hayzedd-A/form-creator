@@ -83,7 +83,6 @@ export default function SignIn() {
                 className="pr-10"
               />
               <span
-                // type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute cursor-pointer inset-y-0 right-0 flex items-center pr-3 text-gray-400 focus:outline-none"
                 aria-label={showPassword ? "Hide password" : "Show password"}

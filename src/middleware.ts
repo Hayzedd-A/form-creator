@@ -8,11 +8,16 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         // Protect dashboard and form creation routes
-        if (req.nextUrl.pathname.startsWith('/dashboard') || 
-            req.nextUrl.pathname.startsWith('/forms/create') ||
-            req.nextUrl.pathname.includes('/edit') ||
-            req.nextUrl.pathname.includes('/responses')) {
-          return !!token
+        if (
+          req.nextUrl.pathname.startsWith("/dashboard") ||
+          req.nextUrl.pathname.startsWith("/forms/create") ||
+          req.nextUrl.pathname.includes("/edit") ||
+          req.nextUrl.pathname.includes("/form/:path/analytics") ||
+          req.nextUrl.pathname.includes("/profile") ||
+          req.nextUrl.pathname.includes("/settings") ||
+          req.nextUrl.pathname.includes("/responses")
+        ) {
+          return !!token;
         }
         return true
       },

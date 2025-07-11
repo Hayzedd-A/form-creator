@@ -36,6 +36,7 @@ import {
   Timer,
   FileText,
 } from "lucide-react";
+import { FileUpload } from "@/components/ui/file-upload";
 
 interface FormField {
   id: string;
@@ -815,50 +816,15 @@ export default function PublicForm() {
 
       case "file-upload":
         return fieldWrapper(
-          <div className="space-y-3">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary transition-colors duration-200">
-              <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-              <input
-                type="file"
-                multiple={field.maxFiles && field.maxFiles > 1}
-                accept={field.allowedFileTypes?.join(",") || "image/*"}
-                onChange={(e) => {
-                  const files = Array.from(e.target.files || []);
-                  if (field.maxFiles && files.length > field.maxFiles) {
-                    toast.error(`Maximum ${field.maxFiles} files allowed`);
-                    return;
-                  }
-
-                  // Check file sizes
-                  const maxSize = (field.maxFileSize || 10) * 1024 * 1024; // Convert MB to bytes
-                  const oversizedFiles = files.filter(
-                    (file) => file.size > maxSize
-                  );
-                  if (oversizedFiles.length > 0) {
-                    toast.error(
-                      `Files must be smaller than ${field.maxFileSize || 10}MB`
-                    );
-                    return;
-                  }
-
-                  handleInputChange(field.id, files);
-                }}
-                className="w-full"
-              />
-              <p className="text-sm text-gray-600 mt-2">
-                Click to upload or drag and drop
-              </p>
-            </div>
-            <div className="text-xs text-gray-500">
-              {field.maxFileSize &&
-                `Max size: ${field.maxFileSize}MB per file. `}
-              {field.maxFiles &&
-                field.maxFiles > 1 &&
-                `Max files: ${field.maxFiles}. `}
-              {field.allowedFileTypes &&
-                `Allowed types: ${field.allowedFileTypes.join(", ")}`}
-            </div>
-          </div>
+          <FileUpload
+            fieldId={field.id}
+            maxFiles={field.maxFiles || 1}
+            maxFileSize={field.maxFileSize || 10}
+            allowedFileTypes={field.allowedFileTypes || ["image/*"]}
+            onFilesChange={(files) => handleInputChange(field.id, files)}
+            value={fieldValue || []}
+            className={fieldError ? "border-red-500" : ""}
+          />
         );
 
       case "signature":

@@ -48,14 +48,13 @@ export default function Dashboard() {
   const router = useRouter();
   const [forms, setForms] = useState<Form[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     if (status === "loading") return;
-    if (!session) {
-      router.push("/auth/signin");
-      return;
-    }
+    // if (!session) {
+    //   router.push("/auth/signin");
+    //   return;
+    // }
 
     fetchForms();
   }, [session, status, router]);
@@ -74,31 +73,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await signOut({
-        redirect: false,
-        callbackUrl: "/auth/signin",
-      });
-      toast.success("Logged out successfully");
-      router.push("/auth/signin");
-    } catch (error) {
-      toast.error("Error logging out");
-      console.error("Logout error:", error);
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   if (status === "loading" || loading) {
     return (
