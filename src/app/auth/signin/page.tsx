@@ -43,10 +43,11 @@ function SignInPage() {
         toast.success("Signed in successful")
         // Verify session is set
         const session = await getSession();
-        console.log("Session after sign in:", !!session);
+        console.log("Session after sign in:", !!session, session);
 
         if (session) {
           router.push(callbackUrl);
+          console.log(callbackUrl)
         } else {
           console.error("Session not set after successful sign in");
         }
