@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { name, email, password } = signupSchema.parse(body)
-
+    console.log("signup endpoint hit")
     await dbConnect()
-
+    console.log("DB connection passed")
     // Check if user already exists
     const existingUser = await User.findOne({ email })
     if (existingUser) {

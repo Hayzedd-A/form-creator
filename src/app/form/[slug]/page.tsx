@@ -432,7 +432,10 @@ export default function PublicForm() {
           field.width === "half" ? "md:col-span-1" : "md:col-span-2"
         }`}
       >
-        <Label style={{borderTop: "2px solid lightgray"}} className="block  font-bold text-lg border-t-gray-500 pt-2 text-gray-700">
+        <Label
+          style={{ borderTop: "2px solid lightgray" }}
+          className="block  font-bold text-lg border-t-gray-500 pt-2 text-gray-700"
+        >
           {field.label}
           {field.required && <span className="text-red-500 ml-1">*</span>}
           {field.points && form?.settings.assignmentMode && (
@@ -805,7 +808,9 @@ export default function PublicForm() {
                         }
                         className="mb-2 text-primary focus:ring-primary"
                       />
-                      <span className=" font-bold text-lg border-t-gray-500 pt-2">{value}</span>
+                      <span className=" font-bold text-lg border-t-gray-500 pt-2">
+                        {value}
+                      </span>
                     </label>
                   );
                 }
@@ -1168,7 +1173,10 @@ export default function PublicForm() {
                   <CardContent className="space-y-3">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label style={{borderTop: "2px solid lightgray"}} className=" font-bold text-lg border-t-gray-500 pt-2 text-gray-600">
+                        <Label
+                          style={{ borderTop: "2px solid lightgray" }}
+                          className=" font-bold text-lg border-t-gray-500 pt-2 text-gray-600"
+                        >
                           Your Answer:
                         </Label>
                         <div
@@ -1185,7 +1193,10 @@ export default function PublicForm() {
                         </div>
                       </div>
                       <div>
-                        <Label style={{borderTop: "2px solid lightgray"}} className=" font-bold text-lg border-t-gray-500 pt-2 text-gray-600">
+                        <Label
+                          style={{ borderTop: "2px solid lightgray" }}
+                          className=" font-bold text-lg border-t-gray-500 pt-2 text-gray-600"
+                        >
                           Correct Answer:
                         </Label>
                         <div className="p-3 rounded border bg-green-50 border-green-200">
@@ -1197,7 +1208,10 @@ export default function PublicForm() {
                     </div>
                     {result.explanation && (
                       <div>
-                        <Label style={{borderTop: "2px solid lightgray"}} className=" font-bold text-lg border-t-gray-500 pt-2 text-gray-600">
+                        <Label
+                          style={{ borderTop: "2px solid lightgray" }}
+                          className=" font-bold text-lg border-t-gray-500 pt-2 text-gray-600"
+                        >
                           Explanation:
                         </Label>
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded">
@@ -1356,7 +1370,16 @@ export default function PublicForm() {
                 {form.fields
                   .sort((a, b) => a.order - b.order)
                   .map((field) => (
-                    <div key={field.id}>{renderField(field)}</div>
+                    <div
+                      key={field.id}
+                      className={`space-y-3 ${
+                        field.width === "half"
+                          ? "md:col-span-1"
+                          : "md:col-span-2"
+                      }`}
+                    >
+                      {renderField(field)}
+                    </div>
                   ))}
               </div>
 
@@ -1448,5 +1471,3 @@ export default function PublicForm() {
     </div>
   );
 }
-
-

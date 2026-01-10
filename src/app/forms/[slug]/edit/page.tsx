@@ -1343,7 +1343,7 @@ function FieldEditor({
             <Badge variant="secondary" className="text-xs">
               {fieldType?.icon} {fieldType?.label}
             </Badge>
-            <span className="font-medium">{field.label}</span>
+            {/* <span className="font-medium">{field.label}</span> */}
             {field.required && (
               <Badge variant="destructive" className="text-xs">
                 Required

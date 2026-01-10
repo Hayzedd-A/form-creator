@@ -33,6 +33,7 @@ export interface IFormField extends Document {
   correctAnswer?: any; // for assignment mode
   points?: number; // for assignment mode scoring
   explanation?: string; // for assignment mode feedback
+  width?: "full" | "half" | "quarter";
   order: number;
 }
 
@@ -127,6 +128,7 @@ const FormFieldSchema = new Schema<IFormField>({
   correctAnswer: { type: Schema.Types.Mixed },
   points: { type: Number, default: 1 },
   explanation: { type: String },
+  width: { type: String, enum: ["full", "half", "quarter"], default: "full" },
   order: { type: Number, required: true },
 });
 
