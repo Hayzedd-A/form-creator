@@ -18,7 +18,6 @@ import {
   ArrowLeft,
   Bell,
   Shield,
-  Palette,
   Database,
   Trash2,
 } from "lucide-react";
@@ -31,6 +30,39 @@ interface UserSettings {
   marketingEmails: boolean;
   twoFactorEnabled: boolean;
   dataExport: boolean;
+}
+
+function SettingsSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-background">
+        <div className="container flex justify-between mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <div className="h-9 w-36 animate-pulse rounded-md bg-muted" />
+            <div className="h-7 w-24 animate-pulse rounded-md bg-muted" />
+          </div>
+          <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="space-y-6">
+          {[0, 1, 2].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="h-5 w-40 animate-pulse rounded-md bg-muted" />
+                <div className="h-4 w-64 animate-pulse rounded-md bg-muted" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+                <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function SettingsPage() {
@@ -97,11 +129,7 @@ export default function SettingsPage() {
   };
 
   if (status === "loading" || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <SettingsSkeleton />;
   }
 
   if (!session) {
@@ -109,8 +137,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-background">
         <div className="container flex justify-between mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" asChild>
@@ -119,7 +147,7 @@ export default function SettingsPage() {
                 Back to Dashboard
               </Link>
             </Button>
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+            <h1 className="text-2xl font-bold text-foreground">Settings</h1>
           </div>
           <UserMenu />
         </div>
@@ -130,7 +158,7 @@ export default function SettingsPage() {
           {/* Notifications */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-xl">
                 <Bell className="w-5 h-5" />
                 Notifications
               </CardTitle>
@@ -142,7 +170,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Email Notifications</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Receive notifications about form submissions and updates
                   </p>
                 </div>
@@ -159,7 +187,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Marketing Emails</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Receive updates about new features and tips
                   </p>
                 </div>
@@ -176,7 +204,7 @@ export default function SettingsPage() {
           {/* Security */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-xl">
                 <Shield className="w-5 h-5" />
                 Security
               </CardTitle>
@@ -188,7 +216,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Two-Factor Authentication</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Add an extra layer of security to your account
                   </p>
                 </div>
@@ -205,7 +233,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Password</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Change your account password
                   </p>
                 </div>
@@ -219,7 +247,7 @@ export default function SettingsPage() {
           {/* Data & Privacy */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-xl">
                 <Database className="w-5 h-5" />
                 Data & Privacy
               </CardTitle>
@@ -231,7 +259,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Data Export</Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Download a copy of your data
                   </p>
                 </div>
@@ -244,8 +272,8 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-red-600">Delete Account</Label>
-                  <p className="text-sm text-gray-600">
+                  <Label className="text-destructive">Delete Account</Label>
+                  <p className="text-sm text-muted-foreground">
                     Permanently delete your account and all data
                   </p>
                 </div>

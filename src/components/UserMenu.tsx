@@ -103,7 +103,7 @@ export default function UserMenu({ align = "end", className }: UserMenuProps) {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          className="cursor-pointer text-red-600 focus:text-red-600"
+          className="cursor-pointer text-destructive focus:text-destructive"
           onClick={handleLogout}
           disabled={isLoggingOut}
         >

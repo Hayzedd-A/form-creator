@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Eye, EyeOff, Check, AlertCircle, Lock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import AuthBrandHeader from "@/components/AuthBrandHeader";
 
 interface PasswordRequirement {
   label: string;
@@ -23,6 +24,32 @@ const passwordRequirements: PasswordRequirement[] = [
   { label: "Contains number", test: (p) => /\d/.test(p) },
   { label: "Contains special character", test: (p) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
 ];
+
+function ResetPasswordSkeleton() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <AuthBrandHeader />
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center space-y-2">
+          <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-muted" />
+          <div className="mx-auto h-7 w-40 animate-pulse rounded-md bg-muted" />
+          <div className="mx-auto h-4 w-56 animate-pulse rounded-md bg-muted" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="h-4 w-28 animate-pulse rounded-md bg-muted" />
+            <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-4 w-36 animate-pulse rounded-md bg-muted" />
+            <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+          </div>
+          <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -65,11 +92,11 @@ function ResetPasswordForm() {
 
   const getPasswordStrength = (password: string) => {
     const passedRequirements = passwordRequirements.filter(req => req.test(password)).length;
-    
-    if (passedRequirements < 2) return { strength: "Weak", color: "text-red-500" };
-    if (passedRequirements < 4) return { strength: "Medium", color: "text-yellow-500" };
-    if (passedRequirements < 5) return { strength: "Strong", color: "text-green-500" };
-    return { strength: "Very Strong", color: "text-green-600" };
+
+    if (passedRequirements < 2) return { strength: "Weak", color: "text-destructive" };
+    if (passedRequirements < 4) return { strength: "Medium", color: "text-muted-foreground" };
+    if (passedRequirements < 5) return { strength: "Strong", color: "text-primary" };
+    return { strength: "Very Strong", color: "text-primary" };
   };
 
   const passwordStrength = getPasswordStrength(password);
@@ -123,28 +150,25 @@ function ResetPasswordForm() {
   };
 
   if (isValidToken === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <ResetPasswordSkeleton />;
   }
 
   if (isValidToken === false) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+        <AuthBrandHeader />
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-              <AlertCircle className="w-6 h-6 text-red-600" />
+            <div className="mx-auto w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
+              <AlertCircle className="w-6 h-6 text-destructive" />
             </div>
-            <CardTitle className="text-2xl">Invalid Reset Link</CardTitle>
+            <CardTitle className="text-3xl">Invalid Reset Link</CardTitle>
             <CardDescription>
               This password reset link is invalid or has expired.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-gray-600 text-center">
+            <p className="text-sm text-muted-foreground text-center">
               Password reset links expire after 1 hour for security reasons.
               Please request a new password reset link.
             </p>
@@ -163,13 +187,14 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <AuthBrandHeader />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <Lock className="w-6 h-6 text-blue-600" />
+          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+            <Lock className="w-6 h-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
+          <CardTitle className="text-3xl">Reset Password</CardTitle>
           <CardDescription>
             Enter your new password below
           </CardDescription>
@@ -205,7 +230,7 @@ function ResetPasswordForm() {
               {password && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Password strength:</span>
+                    <span className="text-sm text-muted-foreground">Password strength:</span>
                     <Badge variant="outline" className={passwordStrength.color}>
                       {passwordStrength.strength}
                     </Badge>
@@ -216,11 +241,11 @@ function ResetPasswordForm() {
                       return (
                         <div key={index} className="flex items-center gap-2 text-xs">
                           {passed ? (
-                            <Check className="h-3 w-3 text-green-500" />
+                            <Check className="h-3 w-3 text-primary" />
                           ) : (
-                            <AlertCircle className="h-3 w-3 text-gray-400" />
+                            <AlertCircle className="h-3 w-3 text-muted-foreground" />
                           )}
-                          <span className={passed ? "text-green-600" : "text-gray-500"}>
+                          <span className={passed ? "text-foreground" : "text-muted-foreground"}>
                             {req.label}
                           </span>
                         </div>
@@ -258,7 +283,7 @@ function ResetPasswordForm() {
               </div>
               
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-500 flex items-center gap-1">
+                <p className="text-xs text-destructive flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
                   Passwords do not match
                 </p>
@@ -287,11 +312,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    }>
+    <Suspense fallback={<ResetPasswordSkeleton />}>
       <ResetPasswordForm />
     </Suspense>
   );

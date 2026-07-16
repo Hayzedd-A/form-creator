@@ -1,4 +1,4 @@
-# Form Creator - Full-Stack Form Builder
+# Hayzedd Forms - Full-Stack Form Builder
 
 A comprehensive form builder application built with Next.js, featuring dynamic form creation, response collection, and analytics.
 

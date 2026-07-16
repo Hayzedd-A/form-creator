@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { toast } from "sonner";
 import ForgetPasswordModal from "@/components/ForgetPasswordModal";
+import AuthBrandHeader from "@/components/AuthBrandHeader";
 import { Eye, EyeOff } from "lucide-react";
 
 function SignInPage() {
@@ -37,23 +38,12 @@ function SignInPage() {
         redirect: false, // Handle redirect manually
       });
 
-      if (result?.ok) {
-        // Wait a moment for session to be set
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        toast.success("Signed in successful")
-        // Verify session is set
-        const session = await getSession();
-        console.log("Session after sign in:", !!session, session);
-
-        if (session) {
-          router.push(callbackUrl);
-          console.log(callbackUrl)
-        } else {
-          console.error("Session not set after successful sign in");
-        }
-      } else {
+      if (result?.error) {
         toast.error("Invalid credentials")
-        console.error("Sign in failed:", result?.error);
+        console.error("Sign in failed:", result.error);
+      } else {
+        toast.success("Signed in successfully")
+        router.push(callbackUrl);
       }
     } catch (error) {
       toast.error("An error occurred");
@@ -63,10 +53,11 @@ function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <AuthBrandHeader />
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Sign in</CardTitle>
+          <CardTitle className="text-3xl text-center">Sign in</CardTitle>
           <CardDescription className="text-center">
             Enter your email and password to sign in to your account
           </CardDescription>
@@ -96,9 +87,10 @@ function SignInPage() {
                 required
                 className="pr-10"
               />
-              <span
+              <button
+                type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute cursor-pointer inset-y-0 right-0 flex items-center pr-3 text-gray-400 focus:outline-none"
+                className="absolute cursor-pointer inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
@@ -106,7 +98,7 @@ function SignInPage() {
                 ) : (
                   <Eye className="h-4 w-4" />
                 )}
-              </span>
+              </button>
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
@@ -116,13 +108,12 @@ function SignInPage() {
           <ForgetPasswordModal>
             <button
               type="button"
-              // onClick={handleForgotPasswordClick}
-              className="text-sm w-full text-end text-primary hover:bg-gray-300 hover:underline focus:outline-none"
+              className="text-sm w-full text-end text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
             >
               Forgot password?
             </button>
           </ForgetPasswordModal>
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-4 text-center text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link href="/auth/signup" className="text-primary hover:underline">
               Sign up
@@ -136,11 +127,22 @@ function SignInPage() {
 
 function SignInLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-        <p className="mt-2 text-gray-600">Loading...</p>
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
+      <AuthBrandHeader />
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <div className="mx-auto h-8 w-24 animate-pulse rounded-md bg-muted" />
+          <div className="mx-auto h-4 w-64 animate-pulse rounded-md bg-muted" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <div className="h-4 w-12 animate-pulse rounded-md bg-muted" />
+            <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+          </div>
+          <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+          <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+        </CardContent>
+      </Card>
     </div>
   );
 }

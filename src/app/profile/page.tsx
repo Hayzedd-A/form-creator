@@ -49,6 +49,52 @@ const passwordRequirements: PasswordRequirement[] = [
   { label: "Contains special character", test: (p) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
 ];
 
+function ProfileSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-background">
+        <div className="container mx-auto flex justify-between px-4 py-4">
+          <div className="flex items-center gap-4">
+            <div className="h-9 w-36 animate-pulse rounded-md bg-muted" />
+            <div className="h-7 w-40 animate-pulse rounded-md bg-muted" />
+          </div>
+          <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
+        </div>
+      </div>
+
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="lg:col-span-1">
+            <Card>
+              <CardHeader className="items-center text-center">
+                <div className="h-24 w-24 animate-pulse rounded-full bg-muted" />
+                <div className="mt-4 h-5 w-32 animate-pulse rounded-md bg-muted" />
+                <div className="h-4 w-40 animate-pulse rounded-md bg-muted" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+              </CardContent>
+            </Card>
+          </div>
+          <div className="lg:col-span-2 space-y-4">
+            <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+            <Card>
+              <CardHeader>
+                <div className="h-5 w-40 animate-pulse rounded-md bg-muted" />
+                <div className="h-4 w-64 animate-pulse rounded-md bg-muted" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+                <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
@@ -285,18 +331,14 @@ export default function ProfilePage() {
       req.test(password)
     ).length;
     if (passedRequirements < 2)
-      return { strength: "weak", color: "text-red-500" };
+      return { strength: "weak", variant: "destructive" as const };
     if (passedRequirements < 4)
-      return { strength: "medium", color: "text-yellow-500" };
-    return { strength: "strong", color: "text-green-500" };
+      return { strength: "medium", variant: "outline" as const };
+    return { strength: "strong", variant: "default" as const };
   };
 
   if (status === "loading" || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <ProfileSkeleton />;
   }
 
   if (!session || !profileData) {
@@ -306,8 +348,8 @@ export default function ProfilePage() {
   const passwordStrength = getPasswordStrength(newPassword);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-background">
         <div className="container flex justify-between mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" asChild>
@@ -316,7 +358,7 @@ export default function ProfilePage() {
                 Back to Dashboard
               </Link>
             </Button>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-foreground">
               Profile Settings
             </h1>
           </div>
@@ -358,7 +400,7 @@ export default function ProfilePage() {
                     )}
                   </div>
                 </div>
-                <CardTitle>{profileData.name}</CardTitle>
+                <CardTitle className="text-xl">{profileData.name}</CardTitle>
                 <CardDescription>{profileData.email}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -403,14 +445,14 @@ export default function ProfilePage() {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Member since:</span>
-                    <span>
+                    <span className="text-muted-foreground">Member since:</span>
+                    <span className="text-foreground">
                       {new Date(profileData.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Last updated:</span>
-                    <span>
+                    <span className="text-muted-foreground">Last updated:</span>
+                    <span className="text-foreground">
                       {new Date(profileData.updatedAt).toLocaleDateString()}
                     </span>
                   </div>
@@ -442,7 +484,7 @@ export default function ProfilePage() {
               <TabsContent value="profile">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Profile Information</CardTitle>
+                    <CardTitle className="text-xl">Profile Information</CardTitle>
                     <CardDescription>
                       Update your personal information and profile details
                     </CardDescription>
@@ -466,9 +508,9 @@ export default function ProfilePage() {
                             id="email"
                             value={profileData.email}
                             disabled
-                            className="bg-gray-50"
+                            className="bg-muted"
                           />
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             Email cannot be changed
                           </p>
                         </div>
@@ -493,7 +535,7 @@ export default function ProfilePage() {
               <TabsContent value="security">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Change Password</CardTitle>
+                    <CardTitle className="text-xl">Change Password</CardTitle>
                     <CardDescription>
                       Update your password to keep your account secure
                     </CardDescription>
@@ -560,13 +602,10 @@ export default function ProfilePage() {
                         {newPassword && (
                           <div className="mt-2 space-y-2">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm text-gray-600">
+                              <span className="text-sm text-muted-foreground">
                                 Password strength:
                               </span>
-                              <Badge
-                                variant="outline"
-                                className={passwordStrength.color}
-                              >
+                              <Badge variant={passwordStrength.variant}>
                                 {passwordStrength.strength}
                               </Badge>
                             </div>
@@ -579,15 +618,15 @@ export default function ProfilePage() {
                                     className="flex items-center gap-2 text-xs"
                                   >
                                     {passed ? (
-                                      <Check className="h-3 w-3 text-green-500" />
+                                      <Check className="h-3 w-3 text-foreground" />
                                     ) : (
-                                      <AlertCircle className="h-3 w-3 text-gray-400" />
+                                      <AlertCircle className="h-3 w-3 text-muted-foreground" />
                                     )}
                                     <span
                                       className={
                                         passed
-                                          ? "text-green-600"
-                                          : "text-gray-500"
+                                          ? "text-foreground"
+                                          : "text-muted-foreground"
                                       }
                                     >
                                       {req.label}
@@ -630,7 +669,8 @@ export default function ProfilePage() {
                           </Button>
                         </div>
                         {confirmPassword && newPassword !== confirmPassword && (
-                          <p className="text-xs text-red-500 mt-1">
+                          <p className="flex items-center gap-1 text-xs text-destructive mt-1">
+                            <AlertCircle className="h-3 w-3" />
                             Passwords do not match
                           </p>
                         )}

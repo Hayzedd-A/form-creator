@@ -202,8 +202,7 @@ export async function POST(
   }
 }
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { MongooseError } from "mongoose";
 
 
@@ -215,7 +214,7 @@ export async function PUT(
 ) {
   try {
     const params = await context.params;
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -467,7 +466,7 @@ export async function DELETE(
 ) {
   try {
     const params = await context.params;
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

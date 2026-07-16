@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
             <div class="content">
               <p>Hello ${user.name},</p>
               
-              <p>We received a request to reset your password for your Form Creator account. If you didn't make this request, you can safely ignore this email.</p>
+              <p>We received a request to reset your password for your Hayzedd Forms account. If you didn't make this request, you can safely ignore this email.</p>
               
               <p>To reset your password, click the button below:</p>
               
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
               
               <p>If you're having trouble clicking the button, copy and paste the URL above into your web browser.</p>
               
-              <p>Best regards,<br>The Form Creator Team</p>
+              <p>Best regards,<br>The Hayzedd Forms Team</p>
             </div>
             <div class="footer">
               <p>This email was sent to ${email}. If you didn't request a password reset, please ignore this email.</p>
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       await transporter.sendMail({
         from: process.env.SMTP_FROM || process.env.SMTP_USER,
         to: email,
-        subject: "Reset Your Password - Form Creator",
+        subject: "Reset Your Password - Hayzedd Forms",
         html: emailHtml,
       });
     }

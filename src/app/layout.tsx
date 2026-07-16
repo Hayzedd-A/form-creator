@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Form Creator - Build Dynamic Forms",
+  title: "Hayzedd Forms - Build Dynamic Forms",
   description: "Create, share, and analyze forms with ease",
 };
 

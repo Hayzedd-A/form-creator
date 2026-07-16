@@ -97,7 +97,7 @@ export default function ForgetPasswordModal({
           <DialogTitle className="flex items-center gap-2">
             {isEmailSent ? (
               <>
-                <CheckCircle className="w-5 h-5 text-green-500" />
+                <CheckCircle className="w-5 h-5 text-primary" />
                 Check Your Email
               </>
             ) : (
@@ -116,19 +116,19 @@ export default function ForgetPasswordModal({
 
         {isEmailSent ? (
           <div className="space-y-4">
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="p-4 bg-muted border border-border rounded-lg">
               <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                <CheckCircle className="w-5 h-5 text-primary mt-0.5" />
                 <div>
-                  <h4 className="font-medium text-green-800">Email Sent!</h4>
-                  <p className="text-sm text-green-700 mt-1">
+                  <h4 className="font-medium text-foreground">Email sent</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
                     We've sent a password reset link to <strong>{email}</strong>
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="text-sm text-gray-600 space-y-2">
+            <div className="text-sm text-muted-foreground space-y-2">
               <p>
                 Please check your email and click the link to reset your
                 password.

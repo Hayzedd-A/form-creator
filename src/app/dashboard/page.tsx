@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -12,24 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Plus,
-  FileText,
-  BarChart3,
-  Settings,
-  LogOut,
-  User,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "sonner";
+import { Plus, FileText, BarChart3, CheckCircle2 } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 
 interface Form {
@@ -38,9 +21,70 @@ interface Form {
   description?: string;
   slug: string;
   createdAt: string;
+  isActive: boolean;
   _count?: {
     responses: number;
   };
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="h-7 w-32 animate-pulse rounded-md bg-muted" />
+              <div className="h-4 w-48 animate-pulse rounded-md bg-muted" />
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="h-10 w-32 animate-pulse rounded-md bg-muted" />
+              <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-8 grid gap-6 md:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 w-24 animate-pulse rounded-md bg-muted" />
+                <div className="h-4 w-4 animate-pulse rounded-md bg-muted" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-12 animate-pulse rounded-md bg-muted" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mb-4 h-6 w-32 animate-pulse rounded-md bg-muted" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="h-5 w-3/4 animate-pulse rounded-md bg-muted" />
+                <div className="h-4 w-full animate-pulse rounded-md bg-muted" />
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4 flex justify-between">
+                  <div className="h-4 w-20 animate-pulse rounded-md bg-muted" />
+                  <div className="h-4 w-20 animate-pulse rounded-md bg-muted" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-8 w-16 animate-pulse rounded-md bg-muted" />
+                  <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
+                  <div className="h-8 w-14 animate-pulse rounded-md bg-muted" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function Dashboard() {
@@ -51,11 +95,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (status === "loading") return;
-    // if (!session) {
-    //   router.push("/auth/signin");
-    //   return;
-    // }
-
     fetchForms();
   }, [session, status, router]);
 
@@ -73,43 +112,40 @@ export default function Dashboard() {
     }
   };
 
-
   if (status === "loading" || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!session) {
     return null;
   }
 
+  const totalResponses = forms.reduce(
+    (acc, form) => acc + (form._count?.responses || 0),
+    0
+  );
+  const activeForms = forms.filter((form) => form.isActive).length;
+  const avgResponsesPerForm =
+    forms.length > 0 ? (totalResponses / forms.length).toFixed(1) : "0";
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-background">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600">
+              <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+              <p className="text-muted-foreground">
                 Welcome back, {session.user?.name}
               </p>
             </div>
             <div className="flex items-center gap-4">
               <Button asChild>
                 <Link href="/forms/create">
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   Create Form
                 </Link>
               </Button>
-
-              {/* User Menu Dropdown */}
-
               <UserMenu />
             </div>
           </div>
@@ -117,7 +153,7 @@ export default function Dashboard() {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="mb-8 grid gap-6 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Forms</CardTitle>
@@ -130,75 +166,56 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Responses
-              </CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Active Forms</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {forms.reduce(
-                  (acc, form) => acc + (form._count?.responses || 0),
-                  0
-                )}
-              </div>
+              <div className="text-2xl font-bold">{activeForms}</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Active Forms
-              </CardTitle>
-              <Settings className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{forms.length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Avg. Response Rate
+                Avg. Responses / Form
               </CardTitle>
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">--</div>
+              <div className="text-2xl font-bold">{avgResponsesPerForm}</div>
             </CardContent>
           </Card>
         </div>
 
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          <h2 className="mb-4 text-xl font-semibold text-foreground">
             Your Forms
           </h2>
 
           {forms.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <FileText className="h-12 w-12 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <FileText className="mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-medium text-foreground">
                   No forms yet
                 </h3>
-                <p className="text-gray-600 mb-4 text-center">
+                <p className="mb-4 text-center text-muted-foreground">
                   Get started by creating your first form
                 </p>
                 <Button asChild>
                   <Link href="/forms/create">
-                    <Plus className="w-4 h-4 mr-2" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Create Your First Form
                   </Link>
                 </Button>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {forms.map((form) => (
                 <Card
                   key={form._id}
-                  className="hover:shadow-md transition-shadow"
+                  className="transition-shadow hover:shadow-md"
                 >
                   <CardHeader>
                     <CardTitle className="text-lg">{form.title}</CardTitle>
@@ -207,11 +224,11 @@ export default function Dashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-sm text-gray-600">
+                    <div className="mb-4 flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
                         {form._count?.responses || 0} responses
                       </span>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         {new Date(form.createdAt).toLocaleDateString()}
                       </span>
                     </div>

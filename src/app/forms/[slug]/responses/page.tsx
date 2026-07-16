@@ -136,6 +136,71 @@ interface AnalyticsData {
   }>;
 }
 
+function ResponsesSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="h-9 w-36 animate-pulse rounded-md bg-muted" />
+              <div className="space-y-2">
+                <div className="h-7 w-48 animate-pulse rounded-md bg-muted" />
+                <div className="h-4 w-32 animate-pulse rounded-md bg-muted" />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-9 w-24 animate-pulse rounded-md bg-muted"
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6 h-10 w-full max-w-md animate-pulse rounded-md bg-muted" />
+
+        <Card className="mb-6">
+          <CardHeader>
+            <div className="h-5 w-40 animate-pulse rounded-md bg-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="h-10 animate-pulse rounded-md bg-muted"
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="h-5 w-32 animate-pulse rounded-md bg-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="h-12 w-full animate-pulse rounded-md bg-muted/60"
+                />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export default function FormResponses() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -575,7 +640,7 @@ export default function FormResponses() {
       fieldResponse.value === null ||
       fieldResponse.value === undefined
     ) {
-      return <span className="text-gray-400">-</span>;
+      return <span className="text-muted-foreground">-</span>;
     }
 
     const value = fieldResponse.value;
@@ -611,12 +676,14 @@ export default function FormResponses() {
                 <Star
                   key={i}
                   className={`w-4 h-4 ${
-                    i < value ? "text-yellow-400 fill-current" : "text-gray-300"
+                    i < value
+                      ? "text-primary fill-current"
+                      : "text-muted-foreground"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               ({value}/{field.maxRating || 5})
             </span>
             {form?.settings.assignmentMode && isCorrect !== undefined && (
@@ -661,13 +728,13 @@ export default function FormResponses() {
             href={fieldResponse.fileUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline flex items-center gap-1"
+            className="text-primary hover:underline flex items-center gap-1"
           >
             <FileText className="w-4 h-4" />
             View File
           </a>
         ) : (
-          <span className="text-gray-400">No file</span>
+          <span className="text-muted-foreground">No file</span>
         );
 
       case "yes-no":
@@ -695,7 +762,7 @@ export default function FormResponses() {
       case "datetime":
         return (
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-400" />
+            <Calendar className="w-4 h-4 text-muted-foreground" />
             <span>{new Date(value).toLocaleDateString()}</span>
           </div>
         );
@@ -703,7 +770,7 @@ export default function FormResponses() {
       case "email":
         return (
           <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-gray-400" />
+            <Mail className="w-4 h-4 text-muted-foreground" />
             <span className="max-w-xs truncate">{value}</span>
           </div>
         );
@@ -711,7 +778,7 @@ export default function FormResponses() {
       case "address":
         return (
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-400" />
+            <MapPin className="w-4 h-4 text-muted-foreground" />
             <span className="max-w-xs truncate">
               {typeof value === "object"
                 ? `${value.street || ""}, ${value.city || ""}, ${
@@ -746,11 +813,7 @@ export default function FormResponses() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return (
-          <Badge variant="default" className="bg-green-100 text-green-800">
-            Completed
-          </Badge>
-        );
+        return <Badge variant="default">Completed</Badge>;
       case "draft":
         return <Badge variant="secondary">Draft</Badge>;
       case "partial":
@@ -760,24 +823,21 @@ export default function FormResponses() {
     }
   };
 
+  // Score/grade is always paired with the literal percentage and score text,
+  // so the badge variant only needs three tiers (pass / borderline / fail) —
+  // it is never the sole signal of performance.
   const getGradeBadge = (score: number, maxScore: number) => {
-    const percentage = (score / maxScore) * 100;
+    const percentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
     let variant: "default" | "secondary" | "destructive" = "secondary";
-    let color = "text-gray-800";
 
-    if (percentage >= 90) {
+    if (percentage >= 70) {
       variant = "default";
-      color = "text-green-800";
-    } else if (percentage >= 70) {
-      color = "text-blue-800";
-    } else if (percentage >= 60) {
-      color = "text-yellow-800";
-    } else {
+    } else if (percentage < 60) {
       variant = "destructive";
     }
 
     return (
-      <Badge variant={variant} className={color}>
+      <Badge variant={variant}>
         {score}/{maxScore} ({Math.round(percentage)}%)
       </Badge>
     );
@@ -790,11 +850,7 @@ export default function FormResponses() {
   const currentResponses = filteredResponses.slice(startIndex, endIndex);
 
   if (status === "loading" || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <ResponsesSkeleton />;
   }
 
   if (!session || !form) {
@@ -802,55 +858,55 @@ export default function FormResponses() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="border-b border-border bg-background">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/dashboard">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
+                  <span className="sr-only sm:not-sr-only">Back to Dashboard</span>
                 </Link>
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+              <div className="min-w-0">
+                <h1 className="truncate text-2xl font-bold text-foreground">
                   {form.title}
                 </h1>
-                <div className="flex items-center gap-4 mt-1">
-                  <p className="text-gray-600">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                  <p className="text-muted-foreground">
                     {analytics?.totalResponses || 0} responses
                   </p>
                   {form.settings.assignmentMode && analytics?.averageScore && (
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       Avg Score: {Math.round(analytics.averageScore * 10) / 10}
                     </p>
                   )}
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={() => fetchFormAndResponses()}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
+                <RefreshCw className="w-4 h-4 sm:mr-2" />
+                <span className="sr-only sm:not-sr-only">Refresh</span>
               </Button>
               <Button variant="outline" onClick={exportToJSON}>
-                <Download className="w-4 h-4 mr-2" />
-                Export JSON
+                <Download className="w-4 h-4 sm:mr-2" />
+                <span className="sr-only sm:not-sr-only">Export JSON</span>
               </Button>
               <Button
                 variant="outline"
                 onClick={exportToCSV}
                 disabled={filteredResponses.length === 0}
               >
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
+                <Download className="w-4 h-4 sm:mr-2" />
+                <span className="sr-only sm:not-sr-only">Export CSV</span>
               </Button>
               <Button variant="outline" asChild>
                 <Link href={`/form/${slug}`} target="_blank">
-                  <Eye className="w-4 h-4 mr-2" />
-                  View Form
+                  <Eye className="w-4 h-4 sm:mr-2" />
+                  <span className="sr-only sm:not-sr-only">View Form</span>
                 </Link>
               </Button>
               <Button variant="outline" asChild>
@@ -889,14 +945,14 @@ export default function FormResponses() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-muted-foreground">
                         Total Responses
                       </p>
-                      <p className="text-2xl font-bold">
+                      <p className="text-2xl font-bold text-foreground">
                         {analytics?.totalResponses || 0}
                       </p>
                     </div>
-                    <Users className="w-8 h-8 text-blue-500" />
+                    <Users className="w-8 h-8 text-muted-foreground" />
                   </div>
                 </CardContent>
               </Card>
@@ -905,14 +961,14 @@ export default function FormResponses() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-muted-foreground">
                         Completed
                       </p>
-                      <p className="text-2xl font-bold text-green-600">
+                      <p className="text-2xl font-bold text-foreground">
                         {analytics?.completedResponses || 0}
                       </p>
                     </div>
-                    <CheckCircle className="w-8 h-8 text-green-500" />
+                    <CheckCircle className="w-8 h-8 text-muted-foreground" />
                   </div>
                 </CardContent>
               </Card>
@@ -921,14 +977,14 @@ export default function FormResponses() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-muted-foreground">
                         Drafts
                       </p>
-                      <p className="text-2xl font-bold text-yellow-600">
+                      <p className="text-2xl font-bold text-foreground">
                         {analytics?.draftResponses || 0}
                       </p>
                     </div>
-                    <Clock className="w-8 h-8 text-yellow-500" />
+                    <Clock className="w-8 h-8 text-muted-foreground" />
                   </div>
                 </CardContent>
               </Card>
@@ -938,16 +994,16 @@ export default function FormResponses() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600">
+                        <p className="text-sm font-medium text-muted-foreground">
                           Avg Score
                         </p>
-                        <p className="text-2xl font-bold text-purple-600">
+                        <p className="text-2xl font-bold text-foreground">
                           {analytics?.averageScore
                             ? Math.round(analytics.averageScore * 10) / 10
                             : 0}
                         </p>
                       </div>
-                      <TrendingUp className="w-8 h-8 text-purple-500" />
+                      <TrendingUp className="w-8 h-8 text-muted-foreground" />
                     </div>
                   </CardContent>
                 </Card>
@@ -962,9 +1018,9 @@ export default function FormResponses() {
               </CardHeader>
               <CardContent>
                 {responses.slice(0, 5).length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium mb-2">
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium mb-2 text-foreground">
                       No responses yet
                     </h3>
                     <p>Share your form to start collecting responses</p>
@@ -980,16 +1036,16 @@ export default function FormResponses() {
                     {responses.slice(0, 5).map((response) => (
                       <div
                         key={response._id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                        className="flex items-center justify-between p-4 bg-muted rounded-lg"
                       >
                         <div className="flex items-center gap-4">
                           {getStatusBadge(response.status)}
                           <div>
-                            <p className="font-medium">
+                            <p className="font-medium text-foreground">
                               {response.submitterEmail ||
                                 `IP: ${response.submitterIp}`}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               {formatDate(new Date(response.createdAt))}
                             </p>
                           </div>
@@ -1034,7 +1090,7 @@ export default function FormResponses() {
                   <div>
                     <Label htmlFor="search">Search</Label>
                     <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         id="search"
                         placeholder="Search responses..."
@@ -1125,11 +1181,11 @@ export default function FormResponses() {
               <CardContent>
                 {currentResponses.length === 0 ? (
                   <div className="text-center py-12">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">
                       No responses found
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       {filteredResponses.length === 0 && responses.length > 0
                         ? "Try adjusting your filters"
                         : "Share your form to start collecting responses"}
@@ -1140,7 +1196,7 @@ export default function FormResponses() {
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse">
                         <thead>
-                          <tr className="border-b bg-gray-50">
+                          <tr className="border-b border-border bg-muted">
                             <th className="text-left p-3 font-medium">Date</th>
                             <th className="text-left p-3 font-medium">
                               Status
@@ -1180,7 +1236,7 @@ export default function FormResponses() {
                             <tr
                               key={response._id}
                               className={
-                                index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                index % 2 === 0 ? "bg-background" : "bg-muted/40"
                               }
                             >
                               <td className="p-3 text-sm">
@@ -1202,7 +1258,7 @@ export default function FormResponses() {
                               <td className="p-3 text-sm">
                                 {response.submitterLocation ? (
                                   <div className="flex items-center gap-1">
-                                    <MapPin className="w-3 h-3 text-gray-400" />
+                                    <MapPin className="w-3 h-3 text-muted-foreground" />
                                     <span className="truncate max-w-24">
                                       {response.submitterLocation.city ||
                                         response.submitterLocation.country ||
@@ -1263,7 +1319,7 @@ export default function FormResponses() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => deleteResponse(response._id)}
-                                    className="text-red-600 hover:text-red-700"
+                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                   </Button>
@@ -1278,7 +1334,7 @@ export default function FormResponses() {
                     {/* Pagination */}
                     {totalPages > 1 && (
                       <div className="flex items-center justify-between mt-6">
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-muted-foreground">
                           Showing {startIndex + 1} to{" "}
                           {Math.min(endIndex, filteredResponses.length)} of{" "}
                           {filteredResponses.length} responses
@@ -1378,7 +1434,7 @@ export default function FormResponses() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         {fieldAnalytic.averageValue !== undefined && (
                           <div>
-                            <span className="text-gray-600">
+                            <span className="text-muted-foreground">
                               Average Value:
                             </span>
                             <span className="ml-2 font-medium">
@@ -1390,7 +1446,7 @@ export default function FormResponses() {
 
                         {fieldAnalytic.mostCommonAnswer && (
                           <div>
-                            <span className="text-gray-600">Most Common:</span>
+                            <span className="text-muted-foreground">Most Common:</span>
                             <span className="ml-2 font-medium truncate">
                               {fieldAnalytic.mostCommonAnswer}
                             </span>
@@ -1399,7 +1455,7 @@ export default function FormResponses() {
 
                         {fieldAnalytic.correctRate !== undefined && (
                           <div>
-                            <span className="text-gray-600">Correct Rate:</span>
+                            <span className="text-muted-foreground">Correct Rate:</span>
                             <span className="ml-2 font-medium">
                               {Math.round(fieldAnalytic.correctRate)}%
                             </span>
@@ -1428,13 +1484,13 @@ export default function FormResponses() {
                         key={item.date}
                         className="flex items-center justify-between py-2"
                       >
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           {new Date(item.date).toLocaleDateString()}
                         </span>
                         <div className="flex items-center gap-2">
-                          <div className="w-32 bg-gray-200 rounded-full h-2">
+                          <div className="w-32 bg-muted rounded-full h-2">
                             <div
-                              className="bg-blue-500 h-2 rounded-full"
+                              className="bg-primary h-2 rounded-full"
                               style={{
                                 width: `${
                                   (item.count /
@@ -1457,8 +1513,8 @@ export default function FormResponses() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <div className="text-center py-8 text-muted-foreground">
+                    <BarChart3 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <p>No response data available yet</p>
                   </div>
                 )}
@@ -1480,13 +1536,13 @@ export default function FormResponses() {
                         className="flex items-center justify-between"
                       >
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <MapPin className="w-4 h-4 text-muted-foreground" />
                           <span className="text-sm">{item.location}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="w-24 bg-gray-200 rounded-full h-2">
+                          <div className="w-24 bg-muted rounded-full h-2">
                             <div
-                              className="bg-green-500 h-2 rounded-full"
+                              className="bg-primary h-2 rounded-full"
                               style={{
                                 width: `${
                                   (item.count /
@@ -1504,8 +1560,8 @@ export default function FormResponses() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <MapPin className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <div className="text-center py-8 text-muted-foreground">
+                    <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <p>No location data available</p>
                   </div>
                 )}
@@ -1569,9 +1625,9 @@ export default function FormResponses() {
                             >
                               <span className="text-sm">{grade}</span>
                               <div className="flex items-center gap-2">
-                                <div className="w-24 bg-gray-200 rounded-full h-2">
+                                <div className="w-24 bg-muted rounded-full h-2">
                                   <div
-                                    className="bg-purple-500 h-2 rounded-full"
+                                    className="bg-primary h-2 rounded-full"
                                     style={{
                                       width:
                                         maxCount > 0
@@ -1595,7 +1651,7 @@ export default function FormResponses() {
                       <h4 className="font-medium mb-3">Performance Metrics</h4>
                       <div className="space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-muted-foreground">
                             Highest Score:
                           </span>
                           <span className="font-medium">
@@ -1606,7 +1662,7 @@ export default function FormResponses() {
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-muted-foreground">
                             Lowest Score:
                           </span>
                           <span className="font-medium">
@@ -1617,7 +1673,7 @@ export default function FormResponses() {
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-muted-foreground">
                             Pass Rate (≥70%):
                           </span>
                           <span className="font-medium">
@@ -1638,7 +1694,7 @@ export default function FormResponses() {
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-muted-foreground">
                             Average Time:
                           </span>
                           <span className="font-medium">
@@ -1692,9 +1748,9 @@ export default function FormResponses() {
                           >
                             <span className="text-sm">{browser}</span>
                             <div className="flex items-center gap-2">
-                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                              <div className="w-24 bg-muted rounded-full h-2">
                                 <div
-                                  className="bg-blue-500 h-2 rounded-full"
+                                  className="bg-primary h-2 rounded-full"
                                   style={{
                                     width: `${
                                       (count / responses.length) * 100
@@ -1731,9 +1787,9 @@ export default function FormResponses() {
                           >
                             <span className="text-sm">{os}</span>
                             <div className="flex items-center gap-2">
-                              <div className="w-24 bg-gray-200 rounded-full h-2">
+                              <div className="w-24 bg-muted rounded-full h-2">
                                 <div
-                                  className="bg-green-500 h-2 rounded-full"
+                                  className="bg-primary h-2 rounded-full"
                                   style={{
                                     width: `${
                                       (count / responses.length) * 100
@@ -1793,7 +1849,7 @@ export default function FormResponses() {
                     Export PDF Report
                   </Button>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   CSV includes all response data. JSON includes structured data
                   with metadata. PDF provides a formatted analytics report.
                 </p>

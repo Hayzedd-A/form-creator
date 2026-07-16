@@ -1,35 +1,32 @@
-import { withAuth } from "next-auth/middleware"
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 
-export default withAuth(
-  function middleware(req) {
-    // Add any additional middleware logic here
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        // Protect dashboard and form creation routes
-        if (
-          req.nextUrl.pathname.startsWith("/dashboard") ||
-          req.nextUrl.pathname.startsWith("/forms/create") ||
-          req.nextUrl.pathname.includes("/edit") ||
-          req.nextUrl.pathname.includes("/form/:path/analytics") ||
-          req.nextUrl.pathname.includes("/profile") ||
-          req.nextUrl.pathname.includes("/settings") ||
-          req.nextUrl.pathname.includes("/responses")
-        ) {
-          return !!token;
-        }
-        return true
-      },
-    },
+const { auth } = NextAuth(authConfig);
+
+export default auth((req) => {
+  const { nextUrl } = req;
+  const isLoggedIn = !!req.auth;
+
+  const isProtected =
+    nextUrl.pathname.startsWith("/dashboard") ||
+    nextUrl.pathname.startsWith("/forms/create") ||
+    nextUrl.pathname.includes("/edit") ||
+    nextUrl.pathname.includes("/analytics") ||
+    nextUrl.pathname.includes("/profile") ||
+    nextUrl.pathname.includes("/settings") ||
+    nextUrl.pathname.includes("/responses");
+
+  if (isProtected && !isLoggedIn) {
+    const signInUrl = new URL("/auth/signin", nextUrl.origin);
+    signInUrl.searchParams.set("callbackUrl", nextUrl.pathname);
+    return Response.redirect(signInUrl);
   }
-)
+
+  return undefined; // allow request to proceed
+});
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/forms/create/:path*',
-    '/forms/:path*/edit',
-    '/forms/:path*/responses'
-  ]
-}
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
+};

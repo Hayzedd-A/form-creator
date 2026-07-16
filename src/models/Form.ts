@@ -197,14 +197,13 @@ const FormSchema = new Schema<IForm>(
 );
 
 // Calculate total points when fields change
-FormSchema.pre("save", function (next) {
+FormSchema.pre("save", function () {
   if (this.settings.assignmentMode) {
     this.totalPoints = this.fields.reduce(
       (sum, field) => sum + (field.points || 1),
       0
     );
   }
-  next();
 });
 
 // Indexes for better performance

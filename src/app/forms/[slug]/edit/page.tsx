@@ -38,6 +38,24 @@ import {
   ChevronUp,
   HelpCircle,
   Upload,
+  Type,
+  AlignLeft,
+  Mail,
+  Hash,
+  Phone,
+  Link as LinkIcon,
+  Clock,
+  CalendarClock,
+  CircleDot,
+  CheckSquare,
+  ChevronDownSquare,
+  CheckCircle2,
+  Star,
+  SlidersHorizontal,
+  Paperclip,
+  PenTool,
+  MapPin,
+  AlertCircle,
 } from "lucide-react";
 import { PREDEFINED_CATEGORIES, PREDEFINED_OPTIONS } from "@/lib/datas";
 import ImportOptionsDialog from "@/components/ImportOptionDialog";
@@ -136,24 +154,24 @@ interface FormData {
 }
 
 const FIELD_TYPES = [
-  { value: "short-text", label: "Short Text", icon: "📝" },
-  { value: "paragraph", label: "Paragraph", icon: "📄" },
-  { value: "email", label: "Email", icon: "📧" },
-  { value: "number", label: "Number", icon: "🔢" },
-  { value: "phone", label: "Phone", icon: "📞" },
-  { value: "url", label: "URL", icon: "🔗" },
-  { value: "date", label: "Date", icon: "📅" },
-  { value: "time", label: "Time", icon: "⏰" },
-  { value: "datetime", label: "Date & Time", icon: "📆" },
-  { value: "multiple-choice", label: "Multiple Choice", icon: "🔘" },
-  { value: "checkbox", label: "Checkboxes", icon: "☑️" },
-  { value: "dropdown", label: "Dropdown", icon: "📋" },
-  { value: "yes-no", label: "Yes/No", icon: "✅" },
-  { value: "rating", label: "Rating", icon: "⭐" },
-  { value: "linear-scale", label: "Linear Scale", icon: "📊" },
-  { value: "file-upload", label: "File Upload", icon: "📎" },
-  { value: "signature", label: "Signature", icon: "✍️" },
-  { value: "address", label: "Address", icon: "📍" },
+  { value: "short-text", label: "Short Text", icon: Type },
+  { value: "paragraph", label: "Paragraph", icon: AlignLeft },
+  { value: "email", label: "Email", icon: Mail },
+  { value: "number", label: "Number", icon: Hash },
+  { value: "phone", label: "Phone", icon: Phone },
+  { value: "url", label: "URL", icon: LinkIcon },
+  { value: "date", label: "Date", icon: Calendar },
+  { value: "time", label: "Time", icon: Clock },
+  { value: "datetime", label: "Date & Time", icon: CalendarClock },
+  { value: "multiple-choice", label: "Multiple Choice", icon: CircleDot },
+  { value: "checkbox", label: "Checkboxes", icon: CheckSquare },
+  { value: "dropdown", label: "Dropdown", icon: ChevronDownSquare },
+  { value: "yes-no", label: "Yes/No", icon: CheckCircle2 },
+  { value: "rating", label: "Rating", icon: Star },
+  { value: "linear-scale", label: "Linear Scale", icon: SlidersHorizontal },
+  { value: "file-upload", label: "File Upload", icon: Paperclip },
+  { value: "signature", label: "Signature", icon: PenTool },
+  { value: "address", label: "Address", icon: MapPin },
 ];
 
 const FONT_FAMILIES = [
@@ -164,6 +182,35 @@ const FONT_FAMILIES = [
   { value: "Montserrat", label: "Montserrat" },
   { value: "Poppins", label: "Poppins" },
 ];
+
+function EditFormSkeleton() {
+  return (
+    <div className="container mx-auto max-w-6xl px-4 py-8">
+      <div className="mb-8 flex items-start justify-between">
+        <div className="space-y-2">
+          <div className="h-8 w-56 animate-pulse rounded-md bg-muted" />
+          <div className="h-4 w-72 animate-pulse rounded-md bg-muted" />
+        </div>
+        <div className="flex gap-2">
+          <div className="h-10 w-24 animate-pulse rounded-md bg-muted" />
+          <div className="h-10 w-24 animate-pulse rounded-md bg-muted" />
+          <div className="h-10 w-24 animate-pulse rounded-md bg-muted" />
+        </div>
+      </div>
+      <div className="mb-6 h-10 w-full animate-pulse rounded-md bg-muted" />
+      <Card>
+        <CardHeader>
+          <div className="h-5 w-32 animate-pulse rounded-md bg-muted" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+          <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+          <div className="h-20 w-full animate-pulse rounded-md bg-muted" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export default function EditForm() {
   const { data: session, status } = useSession();
@@ -460,17 +507,24 @@ export default function EditForm() {
   };
 
   if (status === "loading" || isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
+    return <EditFormSkeleton />;
   }
 
   if (!formData) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg">Form not found</div>
+      <div className="container mx-auto flex min-h-[60vh] max-w-6xl items-center justify-center px-4 py-8">
+        <div className="flex flex-col items-center text-center">
+          <AlertCircle className="mb-4 h-10 w-10 text-muted-foreground" />
+          <h1 className="text-xl font-semibold text-foreground">
+            Form not found
+          </h1>
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+            This form may have been deleted, or the link is incorrect.
+          </p>
+          <Button className="mt-6" onClick={() => router.push("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
       </div>
     );
   }
@@ -479,14 +533,22 @@ export default function EditForm() {
       {/* Header */}
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="text-3xl font-bold">{title || "Edit Form"}</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl font-bold text-foreground">
+            {title || "Edit Form"}
+          </h1>
+          <p className="text-muted-foreground mt-2">
             Modify your form structure, settings, and appearance
           </p>
           {formData.analytics && (
-            <div className="flex gap-4 mt-3 text-sm text-gray-500">
-              <span>👁️ {formData.analytics.views} views</span>
-              <span>📝 {formData.analytics.submissions} submissions</span>
+            <div className="flex gap-4 mt-3 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" />
+                {formData.analytics.views} views
+              </span>
+              <span className="flex items-center gap-1">
+                <BarChart3 className="h-3.5 w-3.5" />
+                {formData.analytics.submissions} submissions
+              </span>
               {formData.analytics.lastSubmission && (
                 <span>
                   Last:{" "}
@@ -555,7 +617,7 @@ export default function EditForm() {
           {/* Basic Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Form Details</CardTitle>
+              <CardTitle className="text-xl">Form Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -572,7 +634,7 @@ export default function EditForm() {
                 <div>
                   <Label htmlFor="slug">Form URL</Label>
                   <div className="flex">
-                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-border bg-muted text-muted-foreground text-sm">
                       /form/
                     </span>
                     <Input
@@ -602,29 +664,29 @@ export default function EditForm() {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Form Fields</CardTitle>
-                  <div className="flex gap-2 flex-wrap">
-                    {FIELD_TYPES.map((fieldType) => (
-                      <Button
-                        key={fieldType.value}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addField(fieldType.value)}
-                        className="text-xs"
-                      >
-                        <span className="mr-1">{fieldType.icon}</span>
-                        {fieldType.label}
-                      </Button>
-                    ))}
-                  </div>
+                  <CardTitle className="text-xl">Form Fields</CardTitle>
+                </div>
+                <div className="flex gap-2 flex-wrap pt-2">
+                  {FIELD_TYPES.map((fieldType) => (
+                    <Button
+                      key={fieldType.value}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addField(fieldType.value)}
+                      className="text-xs"
+                    >
+                      <fieldType.icon className="mr-1 h-3.5 w-3.5" />
+                      {fieldType.label}
+                    </Button>
+                  ))}
                 </div>
               </CardHeader>
               <CardContent>
                 {fields.length === 0 ? (
-                  <div className="text-center py-12 text-gray-500">
-                    <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <h3 className="text-lg font-medium mb-2">
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Settings className="w-12 h-12 mx-auto mb-4 text-muted-foreground/60" />
+                    <h3 className="text-lg font-medium mb-2 text-foreground">
                       No fields added yet
                     </h3>
                     <p>
@@ -666,7 +728,7 @@ export default function EditForm() {
               {/* Access Control */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-xl">
                     <Shield className="w-5 h-5" />
                     Access Control
                   </CardTitle>
@@ -675,7 +737,7 @@ export default function EditForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Public Form</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Anyone with the link can access
                       </p>
                     </div>
@@ -690,7 +752,7 @@ export default function EditForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Require Login</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Users must be signed in
                       </p>
                     </div>
@@ -705,7 +767,7 @@ export default function EditForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Collect Email</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Require email before form access
                       </p>
                     </div>
@@ -719,7 +781,7 @@ export default function EditForm() {
 
                   <div>
                     <Label>Allowed Emails</Label>
-                    <p className="text-sm text-gray-500 mb-2">
+                    <p className="text-sm text-muted-foreground mb-2">
                       Restrict access to specific emails (one per line)
                     </p>
                     <Textarea
@@ -755,13 +817,13 @@ export default function EditForm() {
               {/* Response Limits */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Response Limits</CardTitle>
+                  <CardTitle className="text-xl">Response Limits</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>One Response Per User</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Limit to one submission per IP
                       </p>
                     </div>
@@ -776,7 +838,7 @@ export default function EditForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Limit by Email</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         One submission per email address
                       </p>
                     </div>
@@ -791,7 +853,7 @@ export default function EditForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Limit by IP Address</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         One submission per IP address
                       </p>
                     </div>
@@ -808,7 +870,7 @@ export default function EditForm() {
               {/* Schedule */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-xl">
                     <Calendar className="w-5 h-5" />
                     Schedule
                   </CardTitle>
@@ -864,7 +926,7 @@ export default function EditForm() {
               {/* Assignment Mode */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-xl">
                     <BarChart3 className="w-5 h-5" />
                     Assignment Mode
                   </CardTitle>
@@ -873,7 +935,7 @@ export default function EditForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Enable Assignment Mode</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Show results and grades after submission
                       </p>
                     </div>
@@ -886,8 +948,8 @@ export default function EditForm() {
                   </div>
 
                   {settings.assignmentMode && (
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-blue-800">
+                    <div className="p-4 bg-accent rounded-lg">
+                      <p className="text-sm text-accent-foreground">
                         <HelpCircle className="w-4 h-4 inline mr-1" />
                         In assignment mode, you can set correct answers and
                         explanations for each field. Users will see their
@@ -901,13 +963,13 @@ export default function EditForm() {
               {/* User Experience */}
               <Card>
                 <CardHeader>
-                  <CardTitle>User Experience</CardTitle>
+                  <CardTitle className="text-xl">User Experience</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Show Progress Bar</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Display completion progress
                       </p>
                     </div>
@@ -922,7 +984,7 @@ export default function EditForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Allow Save Draft</Label>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         Users can save and resume later
                       </p>
                     </div>
@@ -944,7 +1006,7 @@ export default function EditForm() {
                       }
                       placeholder="https://example.com/thank-you"
                     />
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Redirect users after successful submission
                     </p>
                   </div>
@@ -972,7 +1034,7 @@ export default function EditForm() {
           <TabsContent value="design" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-xl">
                   <Palette className="w-5 h-5" />
                   Custom Theme
                 </CardTitle>
@@ -1124,7 +1186,7 @@ export default function EditForm() {
           <TabsContent value="notifications" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-xl">
                   <Bell className="w-5 h-5" />
                   Email Notifications
                 </CardTitle>
@@ -1133,7 +1195,7 @@ export default function EditForm() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>Email on Submission</Label>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Send email when form is submitted
                     </p>
                   </div>
@@ -1174,7 +1236,7 @@ export default function EditForm() {
                           (email, index) => (
                             <div
                               key={index}
-                              className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                              className="flex items-center justify-between p-2 bg-muted rounded"
                             >
                               <span className="text-sm">{email}</span>
                               <Button
@@ -1203,14 +1265,14 @@ export default function EditForm() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-muted-foreground">
                         Total Views
                       </p>
                       <p className="text-2xl font-bold">
                         {formData.analytics?.views || 0}
                       </p>
                     </div>
-                    <Eye className="w-8 h-8 text-blue-500" />
+                    <Eye className="w-8 h-8 text-muted-foreground" />
                   </div>
                 </CardContent>
               </Card>
@@ -1219,14 +1281,14 @@ export default function EditForm() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-muted-foreground">
                         Total Submissions
                       </p>
                       <p className="text-2xl font-bold">
                         {formData.analytics?.submissions || 0}
                       </p>
                     </div>
-                    <BarChart3 className="w-8 h-8 text-green-500" />
+                    <BarChart3 className="w-8 h-8 text-muted-foreground" />
                   </div>
                 </CardContent>
               </Card>
@@ -1235,7 +1297,7 @@ export default function EditForm() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">
+                      <p className="text-sm font-medium text-muted-foreground">
                         Conversion Rate
                       </p>
                       <p className="text-2xl font-bold">
@@ -1249,7 +1311,7 @@ export default function EditForm() {
                         %
                       </p>
                     </div>
-                    <BarChart3 className="w-8 h-8 text-purple-500" />
+                    <BarChart3 className="w-8 h-8 text-muted-foreground" />
                   </div>
                 </CardContent>
               </Card>
@@ -1257,13 +1319,13 @@ export default function EditForm() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Form URLs</CardTitle>
+                <CardTitle className="text-xl">Form URLs</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <div className="flex items-center justify-between p-3 bg-muted rounded">
                   <div>
                     <p className="font-medium">Public Form URL</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       {window.location.origin}/form/{slug}
                     </p>
                   </div>
@@ -1272,10 +1334,10 @@ export default function EditForm() {
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                <div className="flex items-center justify-between p-3 bg-muted rounded">
                   <div>
                     <p className="font-medium">Responses Dashboard</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       {window.location.origin}/forms/{slug}/responses
                     </p>
                   </div>
@@ -1335,15 +1397,18 @@ function FieldEditor({
   const fieldType = FIELD_TYPES.find((t) => t.value === field.type);
 
   return (
-    <div className="border rounded-lg bg-white">
+    <div className="border border-border rounded-lg bg-card">
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
-            <GripVertical className="w-4 h-4 text-gray-400 cursor-move" />
-            <Badge variant="secondary" className="text-xs">
-              {fieldType?.icon} {fieldType?.label}
+            <GripVertical className="w-4 h-4 text-muted-foreground cursor-move" />
+            <Badge
+              variant="secondary"
+              className="flex items-center gap-1 text-xs"
+            >
+              {fieldType?.icon && <fieldType.icon className="h-3 w-3" />}
+              {fieldType?.label}
             </Badge>
-            {/* <span className="font-medium">{field.label}</span> */}
             {field.required && (
               <Badge variant="destructive" className="text-xs">
                 Required
@@ -1382,13 +1447,13 @@ function FieldEditor({
               <Settings className="w-4 h-4" />
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={onRemove}>
-              <Trash2 className="w-4 h-4 text-red-500" />
+              <Trash2 className="w-4 h-4 text-destructive" />
             </Button>
           </div>
         </div>
 
         {/* Field Preview */}
-        <div className="p-3 bg-gray-50 rounded border">
+        <div className="p-3 bg-muted rounded border">
           <FieldPreview field={field} />
         </div>
 
@@ -1531,8 +1596,8 @@ function FieldSpecificOptions({
           </div>
 
           {assignmentMode && (
-            <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-              <h4 className="font-medium text-blue-900">Assignment Settings</h4>
+            <div className="p-4 bg-accent rounded-lg space-y-3">
+              <h4 className="font-medium text-accent-foreground">Assignment Settings</h4>
               <div>
                 <Label>Correct Answer</Label>
                 <Input
@@ -1599,8 +1664,8 @@ function FieldSpecificOptions({
           </div>
 
           {assignmentMode && (
-            <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-              <h4 className="font-medium text-blue-900">Assignment Settings</h4>
+            <div className="p-4 bg-accent rounded-lg space-y-3">
+              <h4 className="font-medium text-accent-foreground">Assignment Settings</h4>
               <div>
                 <Label>Correct Answer</Label>
                 <Input
@@ -1704,7 +1769,7 @@ function FieldSpecificOptions({
                   <SelectContent>
                     {PREDEFINED_CATEGORIES.map((category) => (
                       <div key={category.label}>
-                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                        <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
                           {category.label}
                         </div>
                         {category.options.map((option) => (
@@ -1799,8 +1864,8 @@ function FieldSpecificOptions({
           </div>
 
           {assignmentMode && (
-            <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-              <h4 className="font-medium text-blue-900">Assignment Settings</h4>
+            <div className="p-4 bg-accent rounded-lg space-y-3">
+              <h4 className="font-medium text-accent-foreground">Assignment Settings</h4>
               <div>
                 <Label>Correct Answer(s)</Label>
                 <div className="space-y-2">
@@ -1867,8 +1932,8 @@ function FieldSpecificOptions({
           </div>
 
           {assignmentMode && (
-            <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-              <h4 className="font-medium text-blue-900">Assignment Settings</h4>
+            <div className="p-4 bg-accent rounded-lg space-y-3">
+              <h4 className="font-medium text-accent-foreground">Assignment Settings</h4>
               <div>
                 <Label>Correct Rating</Label>
                 <Input
@@ -1952,8 +2017,8 @@ function FieldSpecificOptions({
           </div>
 
           {assignmentMode && (
-            <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-              <h4 className="font-medium text-blue-900">Assignment Settings</h4>
+            <div className="p-4 bg-accent rounded-lg space-y-3">
+              <h4 className="font-medium text-accent-foreground">Assignment Settings</h4>
               <div>
                 <Label>Correct Scale Value</Label>
                 <Input
@@ -1999,7 +2064,7 @@ function FieldSpecificOptions({
               }
               placeholder="image/*, .pdf, .doc"
             />
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Separate multiple types with commas (e.g., image/*, .pdf, .docx)
             </p>
           </div>
@@ -2032,8 +2097,8 @@ function FieldSpecificOptions({
 
     case "yes-no":
       return assignmentMode ? (
-        <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-          <h4 className="font-medium text-blue-900">Assignment Settings</h4>
+        <div className="p-4 bg-accent rounded-lg space-y-3">
+          <h4 className="font-medium text-accent-foreground">Assignment Settings</h4>
           <div>
             <Label>Correct Answer</Label>
             <Select
@@ -2071,7 +2136,7 @@ function FieldSpecificOptions({
               onChange={(e) => onUpdate({ pattern: e.target.value })}
               placeholder="e.g., \\d{3}-\\d{3}-\\d{4}"
             />
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Use regex pattern to validate phone format
             </p>
           </div>
@@ -2080,8 +2145,8 @@ function FieldSpecificOptions({
 
     case "signature":
       return (
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600">
+        <div className="p-4 bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground">
             Signature fields will display a drawing canvas for users to sign
             digitally.
           </p>
@@ -2090,8 +2155,8 @@ function FieldSpecificOptions({
 
     case "address":
       return (
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600">
+        <div className="p-4 bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground">
             Address fields will provide structured input for street, city,
             state, and postal code.
           </p>
@@ -2237,12 +2302,11 @@ function FieldPreview({ field }: { field: FormField }) {
         return (
           <div className="flex gap-1">
             {Array.from({ length: field.maxRating || 5 }, (_, i) => (
-              <span
+              <Star
                 key={i}
-                className="text-gray-300 text-xl cursor-pointer hover:text-yellow-400"
-              >
-                ★
-              </span>
+                className="h-5 w-5 text-muted-foreground"
+                aria-hidden="true"
+              />
             ))}
           </div>
         );
@@ -2250,7 +2314,7 @@ function FieldPreview({ field }: { field: FormField }) {
       case "linear-scale":
         return (
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>{field.scaleLabels?.min || field.minScale}</span>
               <span>{field.scaleLabels?.max || field.maxScale}</span>
             </div>
@@ -2265,7 +2329,7 @@ function FieldPreview({ field }: { field: FormField }) {
                       disabled
                       className="opacity-60"
                     />
-                    <span className="text-xs text-gray-500 mt-1">
+                    <span className="text-xs text-muted-foreground mt-1">
                       {(field.minScale || 1) + i}
                     </span>
                   </div>
@@ -2277,10 +2341,10 @@ function FieldPreview({ field }: { field: FormField }) {
 
       case "file-upload":
         return (
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center opacity-60">
-            <div className="text-gray-500">
+          <div className="border-2 border-dashed border-border rounded-lg p-6 text-center opacity-60">
+            <div className="text-muted-foreground">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-12 w-12 text-muted-foreground"
                 stroke="currentColor"
                 fill="none"
                 viewBox="0 0 48 48"
@@ -2293,7 +2357,7 @@ function FieldPreview({ field }: { field: FormField }) {
                 />
               </svg>
               <p className="mt-2 text-sm">Click to upload or drag and drop</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 {field.allowedFileTypes?.join(", ") || "Any file type"}
                 {field.maxFileSize && ` (Max: ${field.maxFileSize}MB)`}
               </p>
@@ -2303,9 +2367,10 @@ function FieldPreview({ field }: { field: FormField }) {
 
       case "signature":
         return (
-          <div className="border rounded-lg p-4 bg-gray-50 opacity-60">
-            <div className="h-24 flex items-center justify-center text-gray-500">
-              <span>✍️ Signature pad will appear here</span>
+          <div className="border border-border rounded-lg p-4 bg-muted opacity-60">
+            <div className="h-24 flex items-center justify-center gap-2 text-muted-foreground">
+              <PenTool className="h-4 w-4" aria-hidden="true" />
+              <span className="text-sm">Signature pad will appear here</span>
             </div>
           </div>
         );
@@ -2326,7 +2391,7 @@ function FieldPreview({ field }: { field: FormField }) {
         );
 
       default:
-        return <div className="text-gray-400 text-sm">Unknown field type</div>;
+        return <div className="text-muted-foreground text-sm">Unknown field type</div>;
     }
   };
 
@@ -2335,7 +2400,7 @@ function FieldPreview({ field }: { field: FormField }) {
       <div className="flex items-center gap-2 mb-2">
         <label className="block text-sm font-medium">
           {field.label}
-          {field.required && <span className="text-red-500 ml-1">*</span>}
+          {field.required && <span className="text-destructive ml-1">*</span>}
         </label>
         {field.width === "half" && (
           <Badge variant="outline" className="text-xs">
@@ -2344,7 +2409,7 @@ function FieldPreview({ field }: { field: FormField }) {
         )}
       </div>
       {field.description && (
-        <p className="text-xs text-gray-500 mb-2">{field.description}</p>
+        <p className="text-xs text-muted-foreground mb-2">{field.description}</p>
       )}
       {renderField()}
     </div>

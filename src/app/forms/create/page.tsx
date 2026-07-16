@@ -38,6 +38,22 @@ import {
   Palette,
   Bell,
   Upload,
+  Type,
+  AlignLeft,
+  Hash,
+  Phone,
+  Link2,
+  Clock,
+  CalendarClock,
+  CircleDot,
+  CheckSquare,
+  ChevronDownSquare,
+  ToggleLeft,
+  Star,
+  SlidersHorizontal,
+  PenTool,
+  MapPin,
+  Paperclip,
 } from "lucide-react";
 import Link from "next/link";
 import { PREDEFINED_OPTIONS, PREDEFINED_CATEGORIES } from "@/lib/datas";
@@ -123,25 +139,63 @@ interface FormSettings {
 }
 
 const FIELD_TYPES = [
-  { value: "short-text", label: "Short Text", icon: "📝" },
-  { value: "paragraph", label: "Paragraph", icon: "📄" },
-  { value: "email", label: "Email", icon: "📧" },
-  { value: "number", label: "Number", icon: "🔢" },
-  { value: "phone", label: "Phone", icon: "📞" },
-  { value: "url", label: "URL", icon: "🔗" },
-  { value: "date", label: "Date", icon: "📅" },
-  { value: "time", label: "Time", icon: "⏰" },
-  { value: "datetime", label: "Date & Time", icon: "📅⏰" },
-  { value: "multiple-choice", label: "Multiple Choice", icon: "🔘" },
-  { value: "checkbox", label: "Checkboxes", icon: "☑️" },
-  { value: "dropdown", label: "Dropdown", icon: "📋" },
-  { value: "yes-no", label: "Yes/No", icon: "✅❌" },
-  { value: "rating", label: "Rating", icon: "⭐" },
-  { value: "linear-scale", label: "Linear Scale", icon: "📊" },
-  { value: "file-upload", label: "File Upload", icon: "📎" },
-  { value: "signature", label: "Signature", icon: "✍️" },
-  { value: "address", label: "Address", icon: "📍" },
+  { value: "short-text", label: "Short Text", icon: Type },
+  { value: "paragraph", label: "Paragraph", icon: AlignLeft },
+  { value: "email", label: "Email", icon: Mail },
+  { value: "number", label: "Number", icon: Hash },
+  { value: "phone", label: "Phone", icon: Phone },
+  { value: "url", label: "URL", icon: Link2 },
+  { value: "date", label: "Date", icon: Calendar },
+  { value: "time", label: "Time", icon: Clock },
+  { value: "datetime", label: "Date & Time", icon: CalendarClock },
+  { value: "multiple-choice", label: "Multiple Choice", icon: CircleDot },
+  { value: "checkbox", label: "Checkboxes", icon: CheckSquare },
+  { value: "dropdown", label: "Dropdown", icon: ChevronDownSquare },
+  { value: "yes-no", label: "Yes/No", icon: ToggleLeft },
+  { value: "rating", label: "Rating", icon: Star },
+  { value: "linear-scale", label: "Linear Scale", icon: SlidersHorizontal },
+  { value: "file-upload", label: "File Upload", icon: Paperclip },
+  { value: "signature", label: "Signature", icon: PenTool },
+  { value: "address", label: "Address", icon: MapPin },
 ];
+
+function CreateFormSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-background">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <div className="h-9 w-36 animate-pulse rounded-md bg-muted" />
+            <div className="h-7 w-44 animate-pulse rounded-md bg-muted" />
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 max-w-6xl space-y-6">
+        <div className="h-10 w-full max-w-md animate-pulse rounded-md bg-muted" />
+        <Card>
+          <CardHeader>
+            <div className="h-5 w-32 animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-56 animate-pulse rounded-md bg-muted" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+            <div className="h-20 w-full animate-pulse rounded-md bg-muted" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <div className="h-5 w-32 animate-pulse rounded-md bg-muted" />
+            <div className="h-4 w-56 animate-pulse rounded-md bg-muted" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-32 w-full animate-pulse rounded-md bg-muted" />
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
 
 export default function CreateForm() {
   const { data: session, status } = useSession();
@@ -361,13 +415,16 @@ export default function CreateForm() {
      updateField(field.id, { options: [] });
    };
 
+   const FieldIcon =
+     FIELD_TYPES.find((t) => t.value === field.type)?.icon ?? Type;
+
    return (
-     <div key={field.id} className="border rounded-lg p-4 bg-white">
+     <div key={field.id} className="border border-border rounded-lg p-4 bg-muted/30">
        <div className="flex items-center justify-between mb-3">
          <div className="flex items-center gap-2">
-           <GripVertical className="w-4 h-4 text-gray-400" />
-           <span className="font-medium">
-             {FIELD_TYPES.find((t) => t.value === field.type)?.icon}{" "}
+           <GripVertical className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+           <FieldIcon className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
+           <span className="font-medium text-foreground">
              {field.type
                .replace("-", " ")
                .replace(/\b\w/g, (l) => l.toUpperCase())}
@@ -378,6 +435,7 @@ export default function CreateForm() {
            variant="ghost"
            size="sm"
            onClick={() => removeField(field.id)}
+           aria-label="Remove field"
          >
            <Trash2 className="w-4 h-4" />
          </Button>
@@ -562,7 +620,7 @@ export default function CreateForm() {
                    <SelectContent>
                      {PREDEFINED_CATEGORIES.map((category) => (
                        <div key={category.label}>
-                         <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase">
+                         <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
                            {category.label}
                          </div>
                          {category.options.map((option) => (
@@ -788,9 +846,13 @@ export default function CreateForm() {
                <div className="space-y-2">
                  <Label className="text-sm">Select correct answers:</Label>
                  {field.options?.map((option, index) => (
-                   <div key={index} className="flex items-center gap-2">
+                   <label
+                     key={index}
+                     className="flex items-center gap-2 cursor-pointer"
+                   >
                      <input
                        type="checkbox"
+                       className="accent-primary h-4 w-4"
                        checked={(field.correctAnswer || []).includes(option)}
                        onChange={(e) => {
                          const current = field.correctAnswer || [];
@@ -807,8 +869,8 @@ export default function CreateForm() {
                          }
                        }}
                      />
-                     <span className="text-sm">{option}</span>
-                   </div>
+                     <span className="text-sm text-foreground">{option}</span>
+                   </label>
                  ))}
                </div>
              ) : field.type === "yes-no" ? (
@@ -892,11 +954,7 @@ export default function CreateForm() {
  };
 
   if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <CreateFormSkeleton />;
   }
 
   if (!session) {
@@ -904,8 +962,8 @@ export default function CreateForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-background">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" asChild>
@@ -914,7 +972,7 @@ export default function CreateForm() {
                 Back to Dashboard
               </Link>
             </Button>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-foreground">
               Create New Form
             </h1>
           </div>
@@ -990,10 +1048,12 @@ export default function CreateForm() {
                   <div className="space-y-4">
                     {fields.map((field) => renderFieldEditor(field))}
 
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                    <div className="border-2 border-dashed border-border rounded-lg p-6">
                       <div className="text-center">
-                        <p className="text-gray-600 mb-4">
-                          Add a field to your form
+                        <p className="text-muted-foreground mb-4">
+                          {fields.length === 0
+                            ? "No fields yet. Add one to start building your form."
+                            : "Add a field to your form"}
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
                           {FIELD_TYPES.map((fieldType) => (
@@ -1007,9 +1067,10 @@ export default function CreateForm() {
                               }
                               className="flex flex-col h-16 text-xs"
                             >
-                              <span className="text-lg mb-1">
-                                {fieldType.icon}
-                              </span>
+                              <fieldType.icon
+                                className="w-4 h-4 mb-1"
+                                aria-hidden="true"
+                              />
                               {fieldType.label}
                             </Button>
                           ))}
@@ -1036,7 +1097,7 @@ export default function CreateForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Public Form</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Anyone with the link can access this form
                       </p>
                     </div>
@@ -1051,7 +1112,7 @@ export default function CreateForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Require Login</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Users must be logged in to submit
                       </p>
                     </div>
@@ -1066,7 +1127,7 @@ export default function CreateForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Collect Email</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Require email before showing form content
                       </p>
                     </div>
@@ -1080,7 +1141,7 @@ export default function CreateForm() {
 
                   <div>
                     <Label>Allowed Emails</Label>
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-muted-foreground mb-2">
                       Only these emails can access the form (leave empty for no
                       restriction)
                     </p>
@@ -1110,7 +1171,8 @@ export default function CreateForm() {
                           <button
                             type="button"
                             onClick={() => removeAllowedEmail(email)}
-                            className="ml-1 hover:text-red-500"
+                            className="ml-1 hover:text-destructive"
+                            aria-label={`Remove ${email}`}
                           >
                             ×
                           </button>
@@ -1132,7 +1194,7 @@ export default function CreateForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Limit One Response per User</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Prevent multiple submissions from the same user
                       </p>
                     </div>
@@ -1147,7 +1209,7 @@ export default function CreateForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Limit by Email</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         One response per email address
                       </p>
                     </div>
@@ -1162,7 +1224,7 @@ export default function CreateForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Limit by IP Address</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         One response per IP address
                       </p>
                     </div>
@@ -1218,7 +1280,7 @@ export default function CreateForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Show Progress Bar</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Display progress indicator to users
                       </p>
                     </div>
@@ -1233,7 +1295,7 @@ export default function CreateForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Allow Save Draft</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Users can save and continue later
                       </p>
                     </div>
@@ -1330,7 +1392,7 @@ export default function CreateForm() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Email on Submission</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         Send email when someone submits the form
                       </p>
                     </div>
@@ -1351,7 +1413,7 @@ export default function CreateForm() {
                   {settings.notifications.emailOnSubmission && (
                     <div>
                       <Label>Notification Emails</Label>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p className="text-sm text-muted-foreground mb-2">
                         Email addresses to notify on form submission
                       </p>
                       <div className="flex gap-2 mb-2">
@@ -1388,7 +1450,8 @@ export default function CreateForm() {
                               <button
                                 type="button"
                                 onClick={() => removeNotificationEmail(email)}
-                                className="ml-1 hover:text-red-500"
+                                className="ml-1 hover:text-destructive"
+                                aria-label={`Remove ${email}`}
                               >
                                 ×
                               </button>
@@ -1404,7 +1467,7 @@ export default function CreateForm() {
           </Tabs>
 
           <div className="flex justify-between items-center pt-6 border-t">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-muted-foreground">
               {fields.length} field{fields.length !== 1 ? "s" : ""} added
             </div>
             <div className="flex gap-4">

@@ -182,7 +182,7 @@ Option 5`;
                 />
               </div>
 
-              <div className="text-center text-gray-500">or</div>
+              <div className="text-center text-sm text-muted-foreground">or</div>
 
               <div>
                 <Label>Paste CSV Content</Label>
@@ -195,12 +195,12 @@ Option 5`;
                 />
               </div>
 
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3 bg-muted rounded-lg">
                 <Label className="text-sm font-medium">
                   CSV Format Example:
                 </Label>
-                <pre className="text-xs mt-1 text-gray-600">{csvExample}</pre>
-                <p className="text-xs text-gray-500 mt-2">
+                <pre className="text-xs mt-1 text-muted-foreground">{csvExample}</pre>
+                <p className="text-xs text-muted-foreground mt-2">
                   • One option per line • Comma-separated values supported • Use
                   quotes for values containing commas
                 </p>
@@ -220,7 +220,7 @@ Option 5`;
                 />
               </div>
 
-              <div className="text-center text-gray-500">or</div>
+              <div className="text-center text-sm text-muted-foreground">or</div>
 
               <div>
                 <Label>Paste JSON Content</Label>
@@ -233,12 +233,12 @@ Option 5`;
                 />
               </div>
 
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3 bg-muted rounded-lg">
                 <Label className="text-sm font-medium">
                   JSON Format Example:
                 </Label>
-                <pre className="text-xs mt-1 text-gray-600">{jsonExample}</pre>
-                <p className="text-xs text-gray-500 mt-2">
+                <pre className="text-xs mt-1 text-muted-foreground">{jsonExample}</pre>
+                <p className="text-xs text-muted-foreground mt-2">
                   • Array of strings • Array of objects with name/label/value
                   properties • Must be valid JSON format
                 </p>
@@ -269,7 +269,7 @@ Option 5`;
                 {importType.toUpperCase()} Format
               </Badge>
             </div>
-            <div className="max-h-32 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+            <div className="max-h-32 overflow-y-auto border border-border rounded-lg p-3 bg-muted">
               <div className="flex flex-wrap gap-1">
                 {previewOptions.map((option, index) => (
                   <Badge key={index} variant="outline" className="text-xs">

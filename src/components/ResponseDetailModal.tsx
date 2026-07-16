@@ -38,6 +38,10 @@ import {
   handlePrintResponseInline 
 } from "@/utils/printResponse";
 
+function formatStatusLabel(status: string) {
+  return status ? status.charAt(0).toUpperCase() + status.slice(1) : status;
+}
+
 interface ResponseDetailModalProps {
   response: any;
   formFields: any[];
@@ -64,7 +68,10 @@ export default function ResponseDetailModal({
   const [adminNotes, setAdminNotes] = useState(response.adminNotes || "");
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Calculate grade information for assignment mode
+  // Calculate grade information for assignment mode. The badge variant only
+  // needs to distinguish pass / borderline / fail — the percentage and
+  // letter grade are always rendered as text alongside it, so the variant
+  // is reinforcement, never the sole signal.
   const gradeInfo =
     assignmentMode &&
     response.totalScore !== undefined &&
@@ -74,23 +81,25 @@ export default function ResponseDetailModal({
             (response.totalScore / response.maxScore) * 100
           );
           let letter = "F";
-          let color = "red";
 
           if (percentage >= 90) {
             letter = "A";
-            color = "green";
           } else if (percentage >= 80) {
             letter = "B";
-            color = "blue";
           } else if (percentage >= 70) {
             letter = "C";
-            color = "yellow";
           } else if (percentage >= 60) {
             letter = "D";
-            color = "orange";
           }
 
-          return { percentage, letter, color };
+          const variant: "default" | "secondary" | "destructive" =
+            percentage >= 70
+              ? "default"
+              : percentage >= 60
+              ? "secondary"
+              : "destructive";
+
+          return { percentage, letter, variant };
         })()
       : null;
 
@@ -153,7 +162,7 @@ export default function ResponseDetailModal({
       fieldResponse.value === null ||
       fieldResponse.value === undefined
     ) {
-      return <span className="text-gray-400 italic">No response</span>;
+      return <span className="text-muted-foreground italic">No response</span>;
     }
 
     const value = fieldResponse.value;
@@ -186,12 +195,14 @@ export default function ResponseDetailModal({
                 <Star
                   key={i}
                   className={`w-4 h-4 ${
-                    i < value ? "text-yellow-400 fill-current" : "text-gray-300"
+                    i < value
+                      ? "text-primary fill-current"
+                      : "text-muted-foreground"
                   }`}
                 />
               ))}
             </div>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               ({value}/{field.maxRating || 5})
             </span>
           </div>
@@ -204,7 +215,7 @@ export default function ResponseDetailModal({
               {value} / {field.maxScale || 10}
             </div>
             {field.scaleLabels && (
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 {field.scaleLabels.min} - {field.scaleLabels.max}
               </div>
             )}
@@ -236,14 +247,19 @@ export default function ResponseDetailModal({
               href={fieldResponse.fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+              className="text-primary hover:underline text-sm flex items-center gap-1"
             >
-              📎 View File
+              <FileText className="w-3.5 h-3.5" />
+              View File
               <ExternalLink className="w-3 h-3" />
             </a>
           );
         }
-        return <span className="text-gray-400 italic">No file uploaded</span>;
+        return (
+          <span className="text-muted-foreground italic">
+            No file uploaded
+          </span>
+        );
 
       case "address":
         if (typeof value === "object" && value !== null) {
@@ -261,7 +277,7 @@ export default function ResponseDetailModal({
       default:
         if (typeof value === "object") {
           return (
-            <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
+            <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
               {JSON.stringify(value, null, 2)}
             </pre>
           );
@@ -275,12 +291,16 @@ export default function ResponseDetailModal({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-start justify-between pb-4 border-b">
+        <div className="flex items-start justify-between pb-4 border-b border-border">
           <div>
-            <h2 className="text-xl font-semibold">Response Details</h2>
-            <p className="text-sm text-gray-600 mt-1">Form: {formTitle}</p>
+            <h2 className="text-xl font-semibold text-foreground">
+              Response Details
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Form: {formTitle}
+            </p>
             {response.submitterEmail && (
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 From: {response.submitterEmail}
               </p>
             )}
@@ -291,13 +311,10 @@ export default function ResponseDetailModal({
                 response.status === "completed" ? "default" : "secondary"
               }
             >
-              {response.status}
+              {formatStatusLabel(response.status)}
             </Badge>
             {assignmentMode && gradeInfo && (
-              <Badge
-                variant="outline"
-                className={`text-${gradeInfo.color}-600`}
-              >
+              <Badge variant={gradeInfo.variant}>
                 {gradeInfo.percentage}% ({gradeInfo.letter})
               </Badge>
             )}
@@ -336,7 +353,9 @@ export default function ResponseDetailModal({
                                 {field.label}
                               </h4>
                               {field.required && (
-                                <span className="text-red-500 text-xs">*</span>
+                                <span className="text-destructive text-xs">
+                                  *
+                                </span>
                               )}
                               <Badge variant="outline" className="text-xs">
                                 {field.type}
@@ -363,15 +382,15 @@ export default function ResponseDetailModal({
                               )}
                             </div>
                             {field.description && (
-                              <p className="text-xs text-gray-500 mb-2">
+                              <p className="text-xs text-muted-foreground mb-2">
                                 {field.description}
                               </p>
                             )}
                           </div>
                         </div>
 
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <div className="text-xs text-gray-500 mb-1">
+                        <div className="bg-muted rounded-lg p-3">
+                          <div className="text-xs text-muted-foreground mb-1">
                             Response:
                           </div>
                           {formatFieldValue(fieldResponse, field)}
@@ -379,21 +398,21 @@ export default function ResponseDetailModal({
 
                         {assignmentMode &&
                           field.correctAnswer !== undefined && (
-                            <div className="bg-blue-50 rounded-lg p-3 space-y-2">
-                              <div className="text-xs font-medium text-blue-900">
+                            <div className="border border-border rounded-lg p-3 space-y-2">
+                              <div className="text-xs font-medium text-foreground">
                                 Correct Answer:
                               </div>
-                              <div className="text-sm text-blue-800">
+                              <div className="text-sm text-muted-foreground">
                                 {Array.isArray(field.correctAnswer)
                                   ? field.correctAnswer.join(", ")
                                   : String(field.correctAnswer)}
                               </div>
                               {field.explanation && (
                                 <div className="space-y-1">
-                                  <div className="text-xs font-medium text-blue-900">
+                                  <div className="text-xs font-medium text-foreground">
                                     Explanation:
                                   </div>
-                                  <p className="text-sm text-blue-800">
+                                  <p className="text-sm text-muted-foreground">
                                     {field.explanation}
                                   </p>
                                 </div>
@@ -421,11 +440,11 @@ export default function ResponseDetailModal({
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Submitted:</span>
+                    <span className="text-muted-foreground">Submitted:</span>
                     <span>{new Date(response.createdAt).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Status:</span>
+                    <span className="text-muted-foreground">Status:</span>
                     <Badge
                       variant={
                         response.status === "completed"
@@ -433,18 +452,18 @@ export default function ResponseDetailModal({
                           : "secondary"
                       }
                     >
-                      {response.status}
+                      {formatStatusLabel(response.status)}
                     </Badge>
                   </div>
                   {response.timeSpent && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Time Spent:</span>
+                      <span className="text-muted-foreground">Time Spent:</span>
                       <span>{formatDuration(response.timeSpent)}</span>
                     </div>
                   )}
                   {response.startedAt && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Started:</span>
+                      <span className="text-muted-foreground">Started:</span>
                       <span>
                         {new Date(response.startedAt).toLocaleString()}
                       </span>
@@ -452,7 +471,7 @@ export default function ResponseDetailModal({
                   )}
                   {response.completedAt && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Completed:</span>
+                      <span className="text-muted-foreground">Completed:</span>
                       <span>
                         {new Date(response.completedAt).toLocaleString()}
                       </span>
@@ -472,7 +491,7 @@ export default function ResponseDetailModal({
                 <CardContent className="space-y-3">
                   {response.submitterEmail && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Email:</span>
+                      <span className="text-muted-foreground">Email:</span>
                       <span className="truncate max-w-32">
                         {response.submitterEmail}
                       </span>
@@ -480,13 +499,13 @@ export default function ResponseDetailModal({
                   )}
                   {response.submitterIp && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">IP Address:</span>
+                      <span className="text-muted-foreground">IP Address:</span>
                       <span>{response.submitterIp}</span>
                     </div>
                   )}
                   {response.sessionId && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Session ID:</span>
+                      <span className="text-muted-foreground">Session ID:</span>
                       <span className="truncate max-w-32">
                         {response.sessionId}
                       </span>
@@ -494,7 +513,7 @@ export default function ResponseDetailModal({
                   )}
                   {response.referrer && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Referrer:</span>
+                      <span className="text-muted-foreground">Referrer:</span>
                       <span className="truncate max-w-32">
                         {response.referrer}
                       </span>
@@ -515,25 +534,25 @@ export default function ResponseDetailModal({
                   <CardContent className="space-y-3">
                     {response.submitterLocation.country && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Country:</span>
+                        <span className="text-muted-foreground">Country:</span>
                         <span>{response.submitterLocation.country}</span>
                       </div>
                     )}
                     {response.submitterLocation.city && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">City:</span>
+                        <span className="text-muted-foreground">City:</span>
                         <span>{response.submitterLocation.city}</span>
                       </div>
                     )}
                     {response.submitterLocation.region && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Region:</span>
+                        <span className="text-muted-foreground">Region:</span>
                         <span>{response.submitterLocation.region}</span>
                       </div>
                     )}
                     {response.submitterLocation.timezone && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Timezone:</span>
+                        <span className="text-muted-foreground">Timezone:</span>
                         <span>{response.submitterLocation.timezone}</span>
                       </div>
                     )}
@@ -557,19 +576,19 @@ export default function ResponseDetailModal({
                   <CardContent className="space-y-3">
                     {response.deviceInfo.device && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Device:</span>
+                        <span className="text-muted-foreground">Device:</span>
                         <span>{response.deviceInfo.device}</span>
                       </div>
                     )}
                     {response.deviceInfo.browser && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Browser:</span>
+                        <span className="text-muted-foreground">Browser:</span>
                         <span>{response.deviceInfo.browser}</span>
                       </div>
                     )}
                     {response.deviceInfo.os && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">OS:</span>
+                        <span className="text-muted-foreground">OS:</span>
                         <span>{response.deviceInfo.os}</span>
                       </div>
                     )}
@@ -596,30 +615,24 @@ export default function ResponseDetailModal({
                     response.maxScore !== undefined ? (
                       <>
                         <div className="text-center">
-                          <div className="text-3xl font-bold mb-2">
+                          <div className="text-3xl font-bold mb-2 text-foreground">
                             {response.totalScore}/{response.maxScore}
                           </div>
-                          <div className="text-lg text-gray-600">
+                          <div className="text-lg text-muted-foreground">
                             {gradeInfo?.percentage}% - Grade {gradeInfo?.letter}
                           </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="w-full bg-muted rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full transition-all duration-300 ${
-                              gradeInfo?.color === "green"
-                                ? "bg-green-500"
-                                : gradeInfo?.color === "blue"
-                                ? "bg-blue-500"
-                                : gradeInfo?.color === "yellow"
-                                ? "bg-yellow-500"
-                                : gradeInfo?.color === "orange"
-                                ? "bg-orange-500"
-                                : "bg-red-500"
+                            className={`h-2 rounded-full transition-all duration-200 ease-out ${
+                              gradeInfo?.variant === "destructive"
+                                ? "bg-destructive"
+                                : "bg-primary"
                             }`}
                             style={{ width: `${gradeInfo?.percentage}%` }}
                           ></div>
                         </div>
-                        <div className="text-sm text-gray-600 text-center">
+                        <div className="text-sm text-muted-foreground text-center">
                           {
                             response.responses.filter((r: any) => r.isCorrect)
                               .length
@@ -634,7 +647,7 @@ export default function ResponseDetailModal({
                         </div>
                       </>
                     ) : (
-                      <div className="text-center text-gray-500">
+                      <div className="text-center text-muted-foreground">
                         No automatic scoring available
                       </div>
                     )}
@@ -661,7 +674,7 @@ export default function ResponseDetailModal({
                         min="0"
                         max={response.maxScore || 100}
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Override the automatic score with a manual grade
                       </p>
                     </div>
@@ -708,12 +721,17 @@ export default function ResponseDetailModal({
                             key={field.id}
                             className={`p-4 rounded-lg border-l-4 ${
                               isCorrect
-                                ? "border-green-500 bg-green-50"
-                                : "border-red-500 bg-red-50"
+                                ? "border-border bg-muted/30"
+                                : "border-destructive bg-destructive/5"
                             }`}
                           >
                             <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-medium">
+                              <h4 className="font-medium text-foreground flex items-center gap-2">
+                                {isCorrect ? (
+                                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                ) : (
+                                  <XCircle className="w-4 h-4 text-destructive shrink-0" />
+                                )}
                                 Question {index + 1}: {field.label}
                               </h4>
                               <Badge
@@ -725,7 +743,7 @@ export default function ResponseDetailModal({
                             </div>
                             <div className="grid md:grid-cols-2 gap-4 text-sm">
                               <div>
-                                <span className="font-medium text-gray-600">
+                                <span className="font-medium text-muted-foreground">
                                   Student Answer:
                                 </span>
                                 <div className="mt-1">
@@ -733,7 +751,7 @@ export default function ResponseDetailModal({
                                 </div>
                               </div>
                               <div>
-                                <span className="font-medium text-gray-600">
+                                <span className="font-medium text-muted-foreground">
                                   Correct Answer:
                                 </span>
                                 <div className="mt-1">
@@ -744,11 +762,11 @@ export default function ResponseDetailModal({
                               </div>
                             </div>
                             {field.explanation && (
-                              <div className="mt-3 p-2 bg-blue-50 rounded">
-                                <span className="font-medium text-blue-900 text-sm">
+                              <div className="mt-3 p-2 border border-border rounded">
+                                <span className="font-medium text-foreground text-sm">
                                   Explanation:
                                 </span>
-                                <p className="text-blue-800 text-sm mt-1">
+                                <p className="text-muted-foreground text-sm mt-1">
                                   {field.explanation}
                                 </p>
                               </div>
@@ -943,8 +961,8 @@ export default function ResponseDetailModal({
         </Tabs>
 
         {/* Footer with quick actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="w-4 h-4" />
             <span>
               Submitted {new Date(response.createdAt).toLocaleDateString()}

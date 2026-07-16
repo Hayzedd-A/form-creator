@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import { v2 as cloudinary } from "cloudinary";
@@ -14,7 +13,7 @@ cloudinary.config({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -118,7 +117,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

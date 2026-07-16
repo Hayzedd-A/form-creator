@@ -171,7 +171,7 @@ export function FileUpload({
       <div
         className={`
           border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200
-          ${dragActive ? "border-primary bg-primary/5" : "border-gray-300"}
+          ${dragActive ? "border-primary bg-primary/5" : "border-border"}
           ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-primary cursor-pointer"}
         `}
         onDragEnter={handleDrag}
@@ -180,7 +180,7 @@ export function FileUpload({
         onDrop={handleDrop}
         onClick={() => !disabled && fileInputRef.current?.click()}
       >
-        <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+        <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
         <input
           ref={fileInputRef}
           type="file"
@@ -190,10 +190,10 @@ export function FileUpload({
           className="hidden"
           disabled={disabled}
         />
-        <p className="text-sm text-gray-600 mb-1">
+        <p className="text-sm text-muted-foreground mb-1">
           Click to upload or drag and drop
         </p>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           {allowedFileTypes.includes("image/*") ? "Images" : allowedFileTypes.join(", ")} up to {maxFileSize}MB
         </p>
       </div>
@@ -201,7 +201,7 @@ export function FileUpload({
       {/* File List */}
       {files.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-gray-700">
+          <h4 className="text-sm font-medium text-foreground">
             Uploaded Files ({files.length}/{maxFiles})
           </h4>
           <div className="grid grid-cols-1 gap-2">
@@ -238,11 +238,11 @@ export function FileUpload({
                   />
                 </div>
               ) : (
-                <div className="p-8 text-center border-2 border-dashed border-gray-300 rounded-lg">
-                  <p className="text-gray-600">Preview not available for this file type</p>
+                <div className="p-8 text-center border-2 border-dashed border-border rounded-lg">
+                  <p className="text-muted-foreground">Preview not available for this file type</p>
                 </div>
               )}
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 <p><strong>Name:</strong> {previewFile.file.name}</p>
                 <p><strong>Size:</strong> {formatFileSize(previewFile.file.size)}</p>
                 <p><strong>Type:</strong> {previewFile.file.type}</p>
@@ -290,7 +290,7 @@ function FilePreviewItem({ filePreview, onRemove, onPreview, onCrop, disabled }:
   const isImage = filePreview.file.type.startsWith("image/");
 
   return (
-    <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
+    <div className="flex items-center space-x-3 p-3 border border-border rounded-lg bg-muted/30">
       {/* File Icon/Thumbnail */}
       <div className="flex-shrink-0">
         {isImage ? (
@@ -303,8 +303,8 @@ function FilePreviewItem({ filePreview, onRemove, onPreview, onCrop, disabled }:
             />
           </div>
         ) : (
-          <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
-            <span className="text-xs font-medium text-gray-600">
+          <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+            <span className="text-xs font-medium text-muted-foreground">
               {filePreview.file.name.split('.').pop()?.toUpperCase()}
             </span>
           </div>
@@ -313,10 +313,10 @@ function FilePreviewItem({ filePreview, onRemove, onPreview, onCrop, disabled }:
 
       {/* File Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">
+        <p className="text-sm font-medium text-foreground truncate">
           {filePreview.file.name}
         </p>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           {formatFileSize(filePreview.file.size)}
         </p>
       </div>
@@ -351,7 +351,7 @@ function FilePreviewItem({ filePreview, onRemove, onPreview, onCrop, disabled }:
           size="sm"
           onClick={onRemove}
           disabled={disabled}
-          className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+          className="h-8 w-8 p-0 text-destructive hover:text-destructive/80"
         >
           <X className="w-4 h-4" />
         </Button>
@@ -501,7 +501,7 @@ function ImageCropDialog({ file, onSave, onCancel }: ImageCropDialogProps) {
 
           {/* Crop controls */}
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-muted-foreground">
               Drag to move crop area. Use corner handles to resize.
             </div>
             <div className="flex space-x-2">

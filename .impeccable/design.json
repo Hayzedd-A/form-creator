@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-16T09:30:00Z",
+  "title": "Design System: Form Creator",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Tailwind Blue 600",
+        "canonical": "oklch(54.6% 0.215 262.9)",
+        "tonalRamp": ["oklch(15.0% 0.215 262.9)", "oklch(28.0% 0.215 262.9)", "oklch(40.0% 0.215 262.9)", "oklch(52.0% 0.215 262.9)", "oklch(64.0% 0.215 262.9)", "oklch(76.0% 0.215 262.9)", "oklch(88.0% 0.215 262.9)", "oklch(96.0% 0.215 262.9)"]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Pure White",
+        "canonical": "oklch(100% 0 0)",
+        "tonalRamp": ["oklch(15.0% 0 0)", "oklch(28.0% 0 0)", "oklch(40.0% 0 0)", "oklch(52.0% 0 0)", "oklch(64.0% 0 0)", "oklch(76.0% 0 0)", "oklch(88.0% 0 0)", "oklch(96.0% 0 0)"]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Near-Black Slate",
+        "canonical": "oklch(13.6% 0.036 259.2)",
+        "tonalRamp": ["oklch(15.0% 0.036 259.2)", "oklch(28.0% 0.036 259.2)", "oklch(40.0% 0.036 259.2)", "oklch(52.0% 0.036 259.2)", "oklch(64.0% 0.036 259.2)", "oklch(76.0% 0.036 259.2)", "oklch(88.0% 0.036 259.2)", "oklch(96.0% 0.036 259.2)"]
+      },
+      "secondary": {
+        "role": "neutral",
+        "displayName": "Slate 100 (shared secondary/muted/accent)",
+        "canonical": "oklch(96.8% 0.007 247.9)",
+        "tonalRamp": ["oklch(15.0% 0.007 247.9)", "oklch(28.0% 0.007 247.9)", "oklch(40.0% 0.007 247.9)", "oklch(52.0% 0.007 247.9)", "oklch(64.0% 0.007 247.9)", "oklch(76.0% 0.007 247.9)", "oklch(88.0% 0.007 247.9)", "oklch(96.0% 0.007 247.9)"]
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Slate 500",
+        "canonical": "oklch(55.4% 0.041 257.4)",
+        "tonalRamp": ["oklch(15.0% 0.041 257.4)", "oklch(28.0% 0.041 257.4)", "oklch(40.0% 0.041 257.4)", "oklch(52.0% 0.041 257.4)", "oklch(64.0% 0.041 257.4)", "oklch(76.0% 0.041 257.4)", "oklch(88.0% 0.041 257.4)", "oklch(96.0% 0.041 257.4)"]
+      },
+      "destructive": {
+        "role": "semantic",
+        "displayName": "Red 500",
+        "canonical": "oklch(63.7% 0.208 25.3)",
+        "tonalRamp": ["oklch(15.0% 0.208 25.3)", "oklch(28.0% 0.208 25.3)", "oklch(40.0% 0.208 25.3)", "oklch(52.0% 0.208 25.3)", "oklch(64.0% 0.208 25.3)", "oklch(76.0% 0.208 25.3)", "oklch(88.0% 0.208 25.3)", "oklch(96.0% 0.208 25.3)"]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Slate 200",
+        "canonical": "oklch(92.9% 0.013 255.5)",
+        "tonalRamp": ["oklch(15.0% 0.013 255.5)", "oklch(28.0% 0.013 255.5)", "oklch(40.0% 0.013 255.5)", "oklch(52.0% 0.013 255.5)", "oklch(64.0% 0.013 255.5)", "oklch(76.0% 0.013 255.5)", "oklch(88.0% 0.013 255.5)", "oklch(96.0% 0.013 255.5)"]
+      },
+      "chart-1": { "role": "dataviz", "displayName": "Burnt Orange", "canonical": "#e76e50" },
+      "chart-2": { "role": "dataviz", "displayName": "Teal", "canonical": "#2a9d90" },
+      "chart-3": { "role": "dataviz", "displayName": "Dark Slate Blue", "canonical": "#274754" },
+      "chart-4": { "role": "dataviz", "displayName": "Gold", "canonical": "#e8c468" },
+      "chart-5": { "role": "dataviz", "displayName": "Sandy Orange", "canonical": "#f4a462" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Landing-page hero heading only." },
+      "title": { "displayName": "Title", "purpose": "Card titles across dashboard, form builder, and modals." },
+      "body": { "displayName": "Body", "purpose": "Default paragraph, description, and form-field text everywhere." },
+      "label": { "displayName": "Label", "purpose": "Badges and small status indicators." }
+    },
+    "shadows": [
+      { "name": "resting", "value": "0 1px 2px 0 rgba(0,0,0,0.05)", "purpose": "Default card shadow, barely perceptible." },
+      { "name": "overlay", "value": "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)", "purpose": "Dialog and select dropdown content." },
+      { "name": "modal-large", "value": "0 25px 50px -12px rgba(0,0,0,0.25)", "purpose": "Large response-detail modal variant only." }
+    ],
+    "motion": [
+      { "name": "overlay-transition", "value": "200ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Dialog/select fade + scale-from-0.96 entrance and exit, driven by Radix data-state hooks." },
+      { "name": "landing-hover-bounce", "value": "300ms ease, scale(1.05) / translateY(-8px)", "purpose": "Landing-page card and button hover transforms — flagged as a Don't, not a pattern to reuse." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Solid-fill call-to-action button used for primary form actions (save, create, submit).",
+      "html": "<button class=\"ds-btn-primary\">Save changes</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 8px 16px; border-radius: 8px; background: #2563eb; color: #f8fafc; font-size: 14px; font-weight: 500; border: none; cursor: pointer; transition: background-color 0.15s ease; } .ds-btn-primary:hover { background: rgba(37,99,235,0.9); } .ds-btn-primary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; } .ds-btn-primary:disabled { pointer-events: none; opacity: 0.5; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary/cancel action button, bordered with transparent fill.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 8px 16px; border-radius: 8px; background: #ffffff; color: #020817; font-size: 14px; font-weight: 500; border: 1px solid #e2e8f0; cursor: pointer; transition: background-color 0.15s ease; } .ds-btn-outline:hover { background: #f1f5f9; } .ds-btn-outline:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Canonical container for forms, dashboard entries, and grouped content — resting shadow only, no hover-lift state.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><h3 class=\"ds-card-title\">Contact Form</h3><p class=\"ds-card-desc\">12 responses this week</p></div><div class=\"ds-card-content\">Form content goes here.</div></div>",
+      "css": ".ds-card { background: #ffffff; color: #020817; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); } .ds-card-header { display: flex; flex-direction: column; gap: 6px; padding: 24px; } .ds-card-title { font-size: 24px; font-weight: 600; line-height: 1; letter-spacing: -0.01em; margin: 0; } .ds-card-desc { font-size: 14px; color: #64748b; margin: 0; } .ds-card-content { padding: 0 24px 24px; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Standard text input used across form builder fields and auth forms.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Enter form title\" />",
+      "css": ".ds-input { display: flex; height: 40px; width: 100%; box-sizing: border-box; border-radius: 6px; border: 1px solid #e2e8f0; background: #ffffff; padding: 8px 12px; font-size: 14px; color: #020817; } .ds-input::placeholder { color: #64748b; } .ds-input:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; } .ds-input:disabled { cursor: not-allowed; opacity: 0.5; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge-default",
+      "description": "Status/label chip used for form states (active/closed) and assignment-mode grade indicators.",
+      "html": "<span class=\"ds-badge-default\">Active</span>",
+      "css": ".ds-badge-default { display: inline-flex; align-items: center; border-radius: 9999px; border: 1px solid transparent; padding: 2px 10px; font-size: 12px; font-weight: 600; background: #2563eb; color: #f8fafc; transition: background-color 0.15s ease; } .ds-badge-default:hover { background: rgba(37,99,235,0.8); }"
+    },
+    {
+      "name": "App Navigation Bar",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Persistent top bar shown across all authenticated app screens — logo, primary links, session controls.",
+      "html": "<nav class=\"ds-nav\"><div class=\"ds-nav-inner\"><a class=\"ds-nav-logo\" href=\"#\">Form Creator</a><div class=\"ds-nav-links\"><a class=\"ds-nav-link\" href=\"#\">Dashboard</a><a class=\"ds-nav-link\" href=\"#\">Create Form</a></div></div></nav>",
+      "css": ".ds-nav { background: #ffffff; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); border-bottom: 1px solid #e2e8f0; } .ds-nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; padding: 0 16px; max-width: 1200px; margin: 0 auto; } .ds-nav-logo { font-size: 20px; font-weight: 700; color: #111827; text-decoration: none; } .ds-nav-links { display: flex; gap: 16px; } .ds-nav-link { font-size: 14px; font-weight: 500; color: #4b5563; text-decoration: none; padding: 8px 12px; border-radius: 6px; transition: color 0.15s ease; } .ds-nav-link:hover { color: #111827; } .ds-nav-link:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Current state: unstyled defaults, no established creative point of view.",
+    "overview": "This is the out-of-the-box shadcn/ui (\"New York\" style) token set layered on Tailwind CSS, with no customization beyond what the scaffolding generator produced. The primary color is Tailwind's stock blue-600; the neutral ramp is stock slate; the type scale is a single Inter weight stack; the radius is the shadcn default 8px. Nothing here was chosen for this product — it's the blank canvas every shadcn project starts from. The landing page diverges further into unrelated decorative territory: a blue-to-purple gradient background, gradient-clipped hero text, emoji as UI iconography, hover-scale bounce transforms, and hype copy. This is not a considered brand layer on top of the shadcn baseline — it's disconnected from it, and from the rest of the product's dashboard/form-builder screens, which never received the same treatment. This file exists to record that starting point precisely, ahead of the institutional/authoritative redesign committed to in PRODUCT.md. Every color, weight, and shadow named is a candidate for replacement, not a system to preserve.",
+    "keyCharacteristics": [
+      "Default shadcn/ui \"New York\" tokens (HSL CSS custom properties on :root / .dark), unmodified",
+      "Single typeface (Inter) at default Tailwind weights, no display/body pairing",
+      "Flat baseline elevation (shadow-sm on cards) with Tailwind default shadow-lg / shadow-2xl for overlays",
+      "One unrelated decorative excursion (the landing page gradient hero) not reflected anywhere else in the product"
+    ],
+    "rules": [
+      { "name": "The Undifferentiated Neutral Rule", "body": "secondary, muted, and accent currently share one literal value (#f1f5f9). Nothing today distinguishes a muted background from a secondary surface from an accent fill — they're interchangeable by accident, not by design.", "section": "colors" },
+      { "name": "The One-Weight Rule (current state)", "body": "Every text role uses the same Inter family; hierarchy is carried entirely by size and weight step, never by a second typeface.", "section": "typography" },
+      { "name": "The Missing-Middle Rule (current state)", "body": "There is a resting shadow and an overlay shadow with nothing between them — no hover/lifted state exists on cards or buttons outside the landing page's bounce transforms.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do treat this file as a \"before\" snapshot — regenerate it once the institutional redesign is implemented, capturing real, intentional tokens in place of these defaults.",
+      "Do keep the existing focus-ring and disabled-state conventions (2px ring, offset 2px, 50% opacity disabled) — these are accessible defaults worth carrying forward regardless of the visual redesign.",
+      "Do differentiate secondary, muted, and accent into three distinct values if the redesign keeps a shadcn-token structure — they're accidentally identical today, not deliberately unified."
+    ],
+    "donts": [
+      "Don't carry forward the landing page's gradient background (from-blue-50 via-indigo-50 to-purple-50) or gradient-clipped hero text (bg-gradient-to-r ... bg-clip-text text-transparent) — explicitly named anti-references in PRODUCT.md.",
+      "Don't keep emoji as UI iconography (the feature-card icons on the landing page use raw emoji glyphs like the construction emoji) — replace with the same icon system (lucide-react) already used everywhere else in the product.",
+      "Don't keep hover-scale bounce transforms (hover:scale-105, hover:-translate-y-2) — PRODUCT.md calls for restraint and rejects decorative motion that doesn't serve legibility or trust.",
+      "Don't keep hype marketing copy (\"Actually Convert\", \"Trusted by 10,000+ users worldwide\", \"Setup in 2 minutes\") — the institutional register communicates confidence through structure and clarity, not SaaS enthusiasm.",
+      "Don't default the whole product to Tailwind Blue 600 as the single differentiator between branded and unbranded elements — PRODUCT.md calls for near-monochrome with at most one restrained accent.",
+      "Don't ship dark mode as the default — PRODUCT.md explicitly calls for a light-first, paper-like baseline."
+    ]
+  }
+}
